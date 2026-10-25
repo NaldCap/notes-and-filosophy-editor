@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- NOVO-MOBILE: decide já no começo se é a visão do celular (evita piscar o layout do computador).
-       Celular = tela estreita (até 600px) ou aparelho de toque deitado (altura até 500px). -->
+       ALTERADO-MOBILE-TOQUE: celular = aparelho em que o toque é a entrada principal (celulares e tablets),
+       seja qual for a largura da janela. No computador com mouse, o zoom e janelas estreitas nunca trocam de visão. -->
   <script>
-    window.__MQ_MOBILE = '(max-width: 600px), (max-height: 500px) and (pointer: coarse)';
+    window.__MQ_MOBILE = '(hover: none) and (pointer: coarse)'; // antes: '(max-width: 600px), (max-height: 500px) and (pointer: coarse)'
     document.documentElement.classList.toggle('mobile', window.matchMedia(window.__MQ_MOBILE).matches);
   </script>
   <title>Anotações e ideias</title>
@@ -64,7 +65,7 @@
       display: flex;
       justify-content: safe center;
       align-items: center;
-      padding: 28px 16px 14px; /* ALTERADO: o espaço de baixo caiu de 40px para 14px (a barra de setas ocupa essa região agora) */
+      padding: 28px 16px 14px; /* ALTERADO: o espaço de baixo caiu de 40px para 14px (a barra de setas agora flutua por cima do cartão) */
     }
 
     .cartao {
@@ -144,16 +145,26 @@
 
     /* ---------- Barra de setas (NOVO) ---------- */
     .controles {
-      position: relative;
-      z-index: 2;
-      flex-shrink: 0;
+      /* ALTERADO-SETAS-FLUTUANTE: a barra agora flutua por cima do cartão, presa à janela (antes ficava
+         abaixo do cartão, no fluxo da página). Assim o cartão pode ocupar esse espaço e as setas
+         continuam visíveis mesmo com o zoom do navegador. */
+      position: fixed;
+      left: 50%;
+      /* NOVO-ZOOM-FIXO: --contra-zoom (1 / zoom do navegador) é calculado pelo script. A barra é reduzida
+         (ou aumentada) nessa proporção, a partir do meio da borda de baixo, e a folga do fundo também,
+         então ela mantém o mesmo tamanho e a mesma posição na tela em qualquer zoom. */
+      bottom: calc(14px * var(--contra-zoom, 1));
+      transform: translateX(-50%) scale(var(--contra-zoom, 1));
+      transform-origin: 50% 100%;
+      z-index: 20;
       display: flex;
       align-items: center;
       width: 230px;  /* ALTERADO-SETAS: antes 276px */
       height: 46px;  /* ALTERADO-SETAS: antes 56px */
-      margin: 0 0 14px;
+      margin: 0;
       background: #ececec;
       border-radius: 23px; /* ALTERADO-SETAS: metade da altura (antes 28px) */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18); /* ALTERADO-SETAS-FLUTUANTE: destaca a barra sobre o cartão */
     }
 
     .controles button {
@@ -719,7 +730,6 @@
 
       // NOVO: elementos usados para medir o espaço que o cartão pode ocupar
       const principal = document.querySelector('main');
-      const controles = document.getElementById('controles');
       const conjunto = document.querySelector('.conjunto-cartao'); // NOVO-MENU
 
       // NOVO-MENU: espaço reservado de cada lado do cartão para o menu (em pixels)
@@ -727,14 +737,12 @@
         return parseFloat(getComputedStyle(conjunto).paddingLeft) || 0;
       }
 
-      // NOVO: soma, em pixels, tudo o que fica na vertical fora do cartão
-      // (espaços do main + barra de setas + margem da barra) — ALTERADO: o título foi removido
+      // NOVO: soma, em pixels, tudo o que fica na vertical fora do cartão.
+      // ALTERADO-SETAS-FLUTUANTE: sobraram só os espaços do main, porque a barra de setas
+      // flutua por cima do cartão e não ocupa mais espaço na página.
       function alturaReservada() {
         const p = getComputedStyle(principal);
-        const c = getComputedStyle(controles);
         return parseFloat(p.paddingTop) + parseFloat(p.paddingBottom)
-          + controles.offsetHeight
-          + parseFloat(c.marginTop) + parseFloat(c.marginBottom)
           + 2; // folga de segurança para não aparecer barra de rolagem
       }
 
@@ -757,8 +765,40 @@
         raiz.style.setProperty('--largura-cartao', largura + 'px');
       }
 
+      // NOVO-ZOOM-FIXO: a barra de setas mantém o mesmo tamanho na tela em qualquer zoom do navegador.
+      // Não existe CSS que ignore o zoom, então o script mede o zoom e aplica o inverso em --contra-zoom.
+      //  - Chrome, Edge e outros: zoom = largura da janela / largura da página (a largura da janela não muda com o zoom).
+      //  - Firefox: essa conta não funciona; usa a variação do devicePixelRatio desde que a página abriu
+      //    (assume que a página abriu com zoom de 100%).
+      // O resultado é arredondado para os níveis de zoom padrão; o que ficar longe de todos (por exemplo,
+      // ferramentas de desenvolvedor encaixadas na janela) é ignorado e vale 100%.
+      const NIVEIS_ZOOM = [0.25, 0.3, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.2, 1.25, 1.33, 1.5, 1.7, 1.75, 2, 2.4, 2.5, 3, 4, 5];
+      const ehFirefox = /firefox/i.test(navigator.userAgent);
+      const dprBase = window.devicePixelRatio;
+
+      function nivelMaisProximo(x) {
+        let melhor = null, menor = Infinity;
+        NIVEIS_ZOOM.forEach(function (n) {
+          const d = Math.abs(Math.log(x / n));
+          if (d < menor) { menor = d; melhor = n; }
+        });
+        return menor < 0.06 ? melhor : null;
+      }
+
+      function zoomDoNavegador() {
+        if (ehFirefox) return nivelMaisProximo(window.devicePixelRatio / dprBase) || 1;
+        if (!window.outerWidth || !window.innerWidth) return 1;
+        return nivelMaisProximo(window.outerWidth / window.innerWidth) || 1;
+      }
+
+      function aplicarContraZoom() {
+        const z = raiz.classList.contains('mobile') ? 1 : zoomDoNavegador(); // no celular não há zoom do navegador
+        raiz.style.setProperty('--contra-zoom', String(+(1 / z).toFixed(4)));
+      }
+
       calcular();
       ajustarPagina();
+      aplicarContraZoom();
 
       // NOVO: quando as fontes terminam de carregar, recalcula uma vez
       // para o cartão continuar cabendo sem rolagem.
@@ -766,6 +806,7 @@
         document.fonts.ready.then(function () {
           calcular();
           ajustarPagina();
+          aplicarContraZoom();
         });
       }
 
@@ -776,6 +817,7 @@
           calcular(); // foi redimensionamento da janela: recalcula
         }
         ajustarPagina();
+        aplicarContraZoom(); // NOVO-ZOOM-FIXO
       });
     })();
   </script>
