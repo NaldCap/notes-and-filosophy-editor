@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- NOVO-MOBILE: decide já no começo se é a visão do celular (evita piscar o layout do computador).
+       Celular = tela estreita (até 600px) ou aparelho de toque deitado (altura até 500px). -->
+  <script>
+    window.__MQ_MOBILE = '(max-width: 600px), (max-height: 500px) and (pointer: coarse)';
+    document.documentElement.classList.toggle('mobile', window.matchMedia(window.__MQ_MOBILE).matches);
+  </script>
+  <title>Anotações e ideias</title>
+
+  <!-- NOVO-ÍCONE: ícone da aba do navegador, embutido no próprio arquivo (funciona sem internet) -->
+  <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --teal: #12b5b8;
+      --teal-claro: #4fcdd0;
+      --teal-bg: #e1f4f5;
+      --escuro: #04343a;
+      --mesa: #e4e4e4; /* NOVO: cinza de fundo da área branca (a "mesa" do livro) */
+      --menu-largura: 147px; /* NOVO-MENU: largura dos botões do menu lateral */
+      --menu-gap: 48px;      /* NOVO-MENU: espaço entre o menu e o cartão */
+      --reserva-menu: calc(var(--menu-largura) + var(--menu-gap)); /* NOVO-MENU: espaço reservado de cada lado do cartão */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    /* ---------- Decorações ---------- */
+    .deco {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .deco-topo-esq   { top: 0;    left: 0;  width: 150px; }
+    .deco-topo-dir   { top: 0;    right: 0; width: 160px; }
+    .deco-base-esq   { bottom: 0; left: 0;  width: 240px; }
+    .deco-base-dir   { bottom: 0; right: 0; width: 300px; }
+
+    /* ---------- Cartão ---------- */
+    main {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: safe center;
+      align-items: center;
+      padding: 28px 16px 14px; /* ALTERADO: o espaço de baixo caiu de 40px para 14px (a barra de setas ocupa essa região agora) */
+    }
+
+    .cartao {
+      position: relative;
+      aspect-ratio: 420 / 297;
+      width: var(--largura-cartao, min(calc(96vw - 2 * var(--reserva-menu)), calc((100vh - 180px) * 1.414))); /* ALTERADO-MENU: desconta o menu dos dois lados */
+      flex-shrink: 0;
+      background: #fff;
+      border: 4px solid var(--teal);
+      border-radius: 30px;
+      box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(18, 181, 184, 0.15);
+    }
+
+    /* moldura interna (linha fina) */
+    .cartao::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 1.5px solid var(--teal-claro);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+
+    /* Área branca: aqui entrará o "livro aberto" depois */
+    .area-branca {
+      position: absolute;
+      inset: 14px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--mesa);   /* NOVO: fundo cinza */
+      container-type: size;      /* NOVO: permite medir a área com as unidades cqw / cqh */
+      display: flex;             /* NOVO: centraliza o livro dentro da área */
+      align-items: center;       /* NOVO */
+      justify-content: center;   /* NOVO */
+    }
+
+    /* ---------- Livro aberto (NOVO) ---------- */
+    .livro {
+      position: relative;
+      flex: none;
+      /* largura: a menor entre 92% da largura da área e o que a altura (94%) permite,
+         sempre mantendo duas A4 lado a lado (420 / 297) */
+      width: min(92cqw, calc(94cqh * 1.4142));
+      aspect-ratio: 420 / 297;
+      /* ALTERADO-CAPA: a grade das duas páginas e a sombra foram para .miolo e .sombra (mais abaixo) */
+    }
+
+    .pagina {
+      min-width: 0;
+      background: #fff;
+      position: relative; /* EDIT-V1: a folha fixa é posicionada dentro da página */
+      overflow: hidden;   /* EDIT-V1: o que passar da borda da página é recortado */
+    }
+
+    /* sombra que escurece em direção à dobra (lombada) */
+    .pagina-esq {
+      background: linear-gradient(to right, #fff 0%, #fff 90%, #efefef 96%, #d6d6d6 100%);
+    }
+    .pagina-dir {
+      background: linear-gradient(to left, #fff 0%, #fff 90%, #efefef 96%, #d6d6d6 100%);
+    }
+
+    /* linha fina exatamente na dobra */
+    .miolo::after { /* ALTERADO-CAPA: antes era .livro::after */
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      transform: translateX(-0.5px);
+      background: rgba(0, 0, 0, 0.18);
+      pointer-events: none;
+    }
+
+    /* ---------- Barra de setas (NOVO) ---------- */
+    .controles {
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      width: 230px;  /* ALTERADO-SETAS: antes 276px */
+      height: 46px;  /* ALTERADO-SETAS: antes 56px */
+      margin: 0 0 14px;
+      background: #ececec;
+      border-radius: 23px; /* ALTERADO-SETAS: metade da altura (antes 28px) */
+    }
+
+    .controles button {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: #1a1a1a;
+      border-radius: 23px; /* ALTERADO-SETAS: acompanha a pílula (antes 28px) */
+      cursor: pointer;
+    }
+    .controles button:hover { background: rgba(0, 0, 0, 0.06); }
+    .controles button:focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: -3px;
+    }
+
+    .controles svg {
+      width: 28px;   /* ALTERADO-SETAS: antes 34px */
+      height: 28px;  /* ALTERADO-SETAS: antes 34px */
+      fill: currentColor;
+    }
+    .controles .avancar svg { transform: scaleX(-1); }
+
+    .controles .sep {
+      width: 1px;
+      height: 24px;  /* ALTERADO-SETAS: antes 30px */
+      background: #555;
+    }
+
+    /* ---------- EDIT-V1: folha A4 de tamanho fixo, escalada ---------- */
+    /* A folha sempre tem 794 x 1123 px (A4). O script calcula --escala
+       (largura da página / 794) e a folha inteira é reduzida ou ampliada
+       com transform, então o texto quebra nas mesmas palavras em qualquer tela. */
+    .folha {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 794px;
+      height: 1123px;
+      padding: 110px 115px 100px;
+      overflow: hidden;
+      transform-origin: 0 0;
+      transform: scale(var(--escala, 0.4));
+      font-family: 'Times New Roman', Times, 'Liberation Serif', serif;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #111;
+      text-align: justify;
+    }
+    .folha h2 {
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+      margin: 0 0 10px;
+    }
+    .folha p { margin: 0 0 12px; }
+    .folha h2:not(:first-child) { margin-top: 34px; }
+    .folha .num {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 48px;
+      text-align: center;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* NOVO-CONTRA: folhas especiais de exemplo (capa e contra-capa), sem número de página */
+    .folha-especial {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .folha-especial .titulo-especial {
+      font-size: 64px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* botão desativado (primeira e última abertura) */
+    .controles button:disabled { opacity: 0.3; cursor: default; }
+    .controles button:disabled:hover { background: transparent; }
+
+    /* ---------- NOVO-MENU: conjunto cartão + menu lateral ---------- */
+    /* O menu fica ao lado do cartão e acompanha o cartão, não a janela.
+       O espaço do menu é reservado dos DOIS lados do cartão, então o cartão
+       continua centralizado (e o visor usa o espaço do lado direito). */
+    .conjunto-cartao {
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      padding: 0 var(--reserva-menu);
+    }
+
+    .menu-lateral {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: var(--menu-largura);
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+    }
+
+    /* NOVO-VISOR: "página X / Y", à direita do cartão, preso ao cartão (como o menu, mas do outro lado).
+       A zona tem a largura de um botão do menu e centraliza o visor; se o texto crescer,
+       a caixa cresce para os dois lados e continua centralizada. */
+    .visor-zona {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      width: var(--menu-largura);
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .visor-zona.escondido { display: none; }
+
+    .visor {
+      flex: none;
+      min-width: 92px;
+      height: 46px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 23px;
+      background: #ececec;       /* mesmo cinza da barra de setas */
+      color: #9a9a9a;
+      font-weight: 800;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    /* estilo dos botões: baseado na imagem de referência */
+    .menu-lateral button {
+      height: 78px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 26px;
+      background: var(--teal);
+      color: #fff;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.15;
+      letter-spacing: -0.4px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .menu-lateral button:hover { background: var(--teal-claro); }
+    .menu-lateral button.ativo { background: var(--escuro); } /* modo atual */
+    .menu-lateral button:focus-visible {
+      outline: 3px solid var(--escuro);
+      outline-offset: 3px;
+    }
+
+    /* ---------- NOVO-MENU: painéis dentro da área branca ---------- */
+    /* (escolher/arrastar um PDF e aviso do editor) */
+    .solta {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--mesa);
+    }
+    .solta.visivel { display: flex; }
+
+    .solta-caixa {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: min(78cqw, 560px);
+      height: min(56cqh, 300px);
+      padding: 16px;
+      border: 3px dashed var(--teal);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--escuro);
+      text-align: center;
+      cursor: pointer;
+    }
+    .solta-caixa strong { font-size: clamp(14px, 2.6cqw, 26px); font-weight: 800; }
+    .solta-caixa span   { font-size: clamp(11px, 1.7cqw, 16px); }
+    .solta.arrastando .solta-caixa { background: var(--teal-bg); border-style: solid; }
+    .solta-aviso { cursor: default; }
+
+    /* ---------- NOVO-MENU: páginas de PDF ---------- */
+    .folha-pdf {
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .folha-pdf canvas { display: block; background: #fff; }
+
+    /* a imagem do PDF cobre o fundo da página, então a sombra da lombada
+       é desenhada por cima (só no modo PDF) */
+    .livro.modo-pdf .pagina-esq::after,
+    .livro.modo-pdf .pagina-dir::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .livro.modo-pdf .pagina-esq::after {
+      background: linear-gradient(to right, rgba(0,0,0,0) 90%, rgba(0,0,0,0.06) 96%, rgba(0,0,0,0.16) 100%);
+    }
+    .livro.modo-pdf .pagina-dir::after {
+      background: linear-gradient(to left, rgba(0,0,0,0) 90%, rgba(0,0,0,0.06) 96%, rgba(0,0,0,0.16) 100%);
+    }
+
+    /* ---------- NOVO-CAPA: miolo, sombra, capa e animações ---------- */
+    /* .miolo é o "livro por dentro": as duas páginas + a sombra.
+       Na capa ele é deslocado 25% para a esquerda, e a página da direita (a capa)
+       fica centralizada no lugar onde ficam as duas páginas. */
+    .miolo {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      perspective: 150cqw;
+    }
+    .miolo.capa   { transform: translateX(-25%); }
+    .miolo.contra { transform: translateX(25%); } /* NOVO-CONTRA: espelho da capa; a folha única fica na esquerda e centralizada */
+    .miolo.capa::after,
+    .miolo.contra::after { opacity: 0; } /* sem linha da lombada na capa e na contra-capa */
+
+    /* ALTERADO-CAPA-C: a antiga "base branca" foi removida. A sombra agora é só um contorno,
+       sem preenchimento, em três camadas que trocam entre si por opacidade (nada cresce nem desliza):
+       livro aberto (as duas páginas), só a metade direita (capa) e só a metade esquerda (contra-capa). */
+    .sombra {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      opacity: 0;
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.22),
+        0 0 6px rgba(0, 0, 0, 0.12);
+    }
+    .sombra-livro { left: 0;   right: 0;   opacity: 1; }
+    .sombra-dir   { left: 50%; right: 0; }
+    .sombra-esq   { left: 0;   right: 50%; }
+    .miolo.capa   .sombra-livro,
+    .miolo.contra .sombra-livro { opacity: 0; }
+    .miolo.capa   .sombra-dir { opacity: 1; }
+    .miolo.contra .sombra-esq { opacity: 1; }
+
+    .pagina.oculta { visibility: hidden; } /* some a página vazia: a da esquerda na capa, a da direita na contra-capa */
+
+    /* as transições só existem enquanto a classe .animando está ligada,
+       assim trocar de modo ou redimensionar a janela nunca anima */
+    .miolo.animando { transition: transform var(--duracao-virada, 650ms) ease-in-out; }
+    .miolo.animando .sombra { transition: opacity var(--duracao-virada, 650ms) ease-in-out; } /* ALTERADO-CAPA-C: antes animava "left" (a base branca crescendo) */
+    .miolo.animando::after { transition: opacity var(--duracao-virada, 650ms) ease-in-out; }
+
+    /* a página que está virando (criada e removida pelo script) */
+    .virada {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      z-index: 5;
+      transform-style: preserve-3d;
+    }
+    .virada-proximo  { left: 50%; transform-origin: left center; }  /* gira em torno da lombada, para a esquerda */
+    .virada-anterior { left: 0;   transform-origin: right center; } /* gira em torno da lombada, para a direita */
+    .miolo.animando .virada { transition: transform var(--duracao-virada, 650ms) ease-in-out; }
+
+    .virada .face {
+      position: absolute;
+      inset: 0;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      box-shadow: 0 0 14px rgba(0, 0, 0, 0.25);
+    }
+    .virada .verso { transform: rotateY(180deg); }
+
+    /* ---------- NOVO-MOBILE: visão do celular ---------- */
+    /* Tudo abaixo só vale com a classe "mobile" no <html> (colocada pelo script do começo da página).
+       No computador a barra de cima e o fundo do menu nem aparecem. */
+    .barra-topo, .fundo-menu { display: none; }
+
+    /* a página não rola: o cartão é movido e ampliado pelo script (arrastar e pinça) */
+    html.mobile, html.mobile body {
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html.mobile main { position: static; z-index: auto; padding: 0; }
+    html.mobile .conjunto-cartao { display: contents; } /* menu, cartão e visor passam a ser posicionados direto na tela */
+
+    /* barra verde de cima, com o botão de três barrinhas */
+    html.mobile .barra-topo {
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: #0a797b;
+      z-index: 30;
+    }
+    html.mobile .btn-menu {
+      width: 48px;
+      height: 48px;
+      margin-left: 4px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    html.mobile .btn-menu span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      border-radius: 2px;
+      background: #c8d1d9;
+    }
+
+    /* visor centralizado na barra de cima */
+    html.mobile .visor-zona {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      right: auto;
+      width: auto;
+      height: 48px;
+      transform: translateX(-50%);
+      align-items: center;
+      z-index: 31;
+    }
+    html.mobile .visor {
+      min-width: 78px;
+      height: 30px;
+      padding: 0 14px;
+      border-radius: 15px;
+      font-size: 13px;
+      background: #f4f4f4;
+    }
+
+    /* cartão: tamanho e posição vêm do script (largura = --largura-cartao, posição = transform) */
+    html.mobile .cartao {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      transform-origin: 0 0;
+      border-width: 3px;
+      border-radius: 18px;
+    }
+    html.mobile .cartao::before { inset: 5px; border-width: 1px; border-radius: 13px; }
+    html.mobile .area-branca { inset: 9px; border-radius: 10px; }
+
+    /* barra de setas: flutua por cima do cartão, embaixo e centralizada */
+    html.mobile .controles {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 36px;
+      margin: 0;
+      border-radius: 18px;
+      z-index: 20;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    }
+    html.mobile .controles button { border-radius: 18px; }
+    html.mobile .controles button:hover { background: transparent; }
+    html.mobile .controles button:active { background: rgba(0, 0, 0, 0.08); }
+    html.mobile .controles svg { width: 22px; height: 22px; }
+    html.mobile .controles .sep { height: 18px; }
+
+    /* menu: painel turquesa que abre pela esquerda, por cima de tudo (menos da barra de cima) */
+    html.mobile .fundo-menu {
+      position: fixed;
+      top: 48px; left: 0; right: 0; bottom: 0;
+      z-index: 35;
+      background: transparent;
+    }
+    html.mobile.menu-aberto .fundo-menu { display: block; }
+
+    html.mobile .menu-lateral {
+      position: fixed;
+      top: 48px;
+      bottom: 0;
+      left: 0;
+      width: 47%;
+      min-width: 150px;
+      padding: 10px 15px;
+      gap: 32px;
+      overflow-y: auto;
+      background: var(--teal);
+      z-index: 40;
+      transform: translateX(-100%);
+      visibility: hidden;
+      transition: transform 0.22s ease-out, visibility 0s linear 0.22s;
+    }
+    html.mobile.menu-aberto .menu-lateral {
+      transform: none;
+      visibility: visible;
+      transition: transform 0.22s ease-out;
+    }
+    html.mobile .menu-lateral button {
+      position: relative;
+      flex: none;
+      height: 44px;
+      padding: 0 8px;
+      border-radius: 15px;
+      background: #0b9c9f;
+      font-size: 14px;
+      letter-spacing: -0.4px;
+    }
+    html.mobile .menu-lateral button:hover { background: #0b9c9f; }
+    html.mobile .menu-lateral button.ativo,
+    html.mobile .menu-lateral button.ativo:hover { background: var(--escuro); }
+    html.mobile .menu-lateral br { display: none; } /* o texto quebra sozinho na largura do painel */
+    /* linha cinza embaixo de cada botão */
+    html.mobile .menu-lateral button::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -17px;
+      width: 74%;
+      height: 2.5px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      background: #c8d1d9;
+    }
+
+    html.mobile .deco-topo-esq { width: 100px; }
+    html.mobile .deco-topo-dir { width: 100px; }
+    html.mobile .deco-base-esq { width: 150px; }
+    html.mobile .deco-base-dir { width: 190px; }
+  </style>
+</head>
+
+<body>
+
+  <!-- Quadrados decorativos: topo esquerdo -->
+  <svg class="deco deco-topo-esq" viewBox="0 0 150 110" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#e1f4f5">
+      <rect x="-28" y="-28" width="52" height="52" rx="10" transform="rotate(45 -2 -2)"/>
+      <rect x="55" y="-22" width="52" height="52" rx="10" transform="rotate(45 81 4)" />
+      <rect x="2"  y="48"  width="52" height="52" rx="10" transform="rotate(45 28 74)" />
+      <rect x="80" y="30"  width="52" height="52" rx="10" transform="rotate(45 106 56)"/>
+    </g>
+  </svg>
+
+  <!-- Quadrados decorativos: topo direito -->
+  <svg class="deco deco-topo-dir" viewBox="0 0 160 170" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#e1f4f5">
+      <rect x="55"  y="5"   width="52" height="52" rx="10" transform="rotate(45 81 31)" />
+      <rect x="15"  y="50"  width="52" height="52" rx="10" transform="rotate(45 41 76)" />
+      <rect x="100" y="50"  width="52" height="52" rx="10" transform="rotate(45 126 76)"/>
+      <rect x="55"  y="95"  width="52" height="52" rx="10" transform="rotate(45 81 121)"/>
+    </g>
+  </svg>
+
+  <!-- Onda inferior esquerda -->
+  <svg class="deco deco-base-esq" viewBox="0 0 240 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 40 L0 6 C60 0 150 10 240 40 Z" fill="#12b5b8"/>
+  </svg>
+
+  <!-- Onda inferior direita -->
+  <svg class="deco deco-base-dir" viewBox="0 0 300 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 100 C120 90 230 50 300 0 L300 100 Z" fill="#12b5b8"/>
+  </svg>
+
+  <!-- NOVO-MOBILE: barra de cima e fundo do menu (só aparecem na visão do celular) -->
+  <header class="barra-topo" id="barraTopo">
+    <button type="button" class="btn-menu" id="btnMenu" aria-label="Abrir menu" aria-expanded="false" aria-controls="menuLateral">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <div class="fundo-menu" id="fundoMenu"></div>
+
+  <main>
+    <!-- NOVO-MENU: conjunto = menu lateral + cartão (tudo preso ao cartão) -->
+    <div class="conjunto-cartao">
+
+      <div class="menu-lateral" id="menuLateral" role="group" aria-label="Modos de leitura">
+        <button type="button" id="btnLivro" class="ativo" aria-pressed="true">Livro</button>
+        <button type="button" id="btnPdf" aria-pressed="false">Ler um PDF <br>como um livro</button>
+        <button type="button" id="btnEditor" aria-pressed="false">Editor de texto</button>
+      </div>
+
+      <div class="cartao">
+        <div class="area-branca" id="areaBranca">
+          <!-- livro aberto com as duas páginas A4 -->
+          <div class="livro" id="livro">
+            <!-- NOVO-CAPA: o miolo guarda a sombra e as duas páginas -->
+            <div class="miolo" id="miolo">
+              <div class="sombra sombra-livro"></div>
+              <div class="sombra sombra-dir"></div>
+              <div class="sombra sombra-esq"></div>
+              <div class="pagina pagina-esq" id="paginaEsq"></div>
+              <div class="pagina pagina-dir" id="paginaDir"></div>
+            </div>
+          </div>
+
+          <!-- NOVO-MENU: escolher ou arrastar um PDF -->
+          <div class="solta" id="solta">
+            <label class="solta-caixa" for="arquivoPdf">
+              <strong id="soltaTitulo">Arraste um PDF aqui</strong>
+              <span id="soltaTexto">ou clique para escolher um arquivo do seu computador</span>
+            </label>
+            <input type="file" id="arquivoPdf" accept="application/pdf,.pdf" hidden>
+          </div>
+
+        <!-- NOVO-MENU: aviso do editor (só na versão do editor) -->
+        <div class="solta" id="avisoEditor">
+          <div class="solta-caixa solta-aviso">
+            <strong>Editor de texto</strong>
+            <span>Em construção: ele chega na próxima versão.</span>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- NOVO-VISOR: página atual / total, preso ao cartão -->
+      <div class="visor-zona" id="visorZona">
+        <div class="visor" id="visor" role="status" aria-label="Página atual">1 / 1</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- NOVO: barra com os botões de voltar e avançar página -->
+  <nav class="controles" id="controles" aria-label="Navegação do livro">
+    <button type="button" class="voltar" id="btnVoltar" aria-label="Página anterior">
+      <svg viewBox="0 0.5 24 24" aria-hidden="true"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
+    </button>
+    <span class="sep" aria-hidden="true"></span>
+    <button type="button" class="avancar" id="btnAvancar" aria-label="Próxima página">
+      <svg viewBox="0 0.5 24 24" aria-hidden="true"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
+    </button>
+  </nav>
+
+  <script>
+    (function () {
+      const raiz = document.documentElement;
+      let dprAnterior = window.devicePixelRatio;
+      let largura = 0;
+
+      // NOVO: elementos usados para medir o espaço que o cartão pode ocupar
+      const principal = document.querySelector('main');
+      const controles = document.getElementById('controles');
+      const conjunto = document.querySelector('.conjunto-cartao'); // NOVO-MENU
+
+      // NOVO-MENU: espaço reservado de cada lado do cartão para o menu (em pixels)
+      function reservaLateral() {
+        return parseFloat(getComputedStyle(conjunto).paddingLeft) || 0;
+      }
+
+      // NOVO: soma, em pixels, tudo o que fica na vertical fora do cartão
+      // (espaços do main + barra de setas + margem da barra) — ALTERADO: o título foi removido
+      function alturaReservada() {
+        const p = getComputedStyle(principal);
+        const c = getComputedStyle(controles);
+        return parseFloat(p.paddingTop) + parseFloat(p.paddingBottom)
+          + controles.offsetHeight
+          + parseFloat(c.marginTop) + parseFloat(c.marginBottom)
+          + 2; // folga de segurança para não aparecer barra de rolagem
+      }
+
+      // Faz a página ficar tão larga quanto o cartão (+ menu/visor + margens do main),
+      // assim o conjunto continua centralizado em relação ao cartão e não à janela.
+      function ajustarPagina() {
+        if (raiz.classList.contains('mobile')) { document.body.style.minWidth = ''; return; } // NOVO-MOBILE: a página não rola no celular
+        const necessaria = largura + 2 * reservaLateral() + 32; // ALTERADO-MENU: inclui o menu dos dois lados
+        document.body.style.minWidth =
+          necessaria > window.innerWidth ? necessaria + 'px' : '';
+      }
+
+      function calcular() {
+        if (raiz.classList.contains('mobile')) return; // NOVO-MOBILE: no celular o tamanho do cartão é definido pelo zoom (script do celular)
+        largura = Math.min(
+          window.innerWidth * 0.96 - 2 * reservaLateral(), // ALTERADO-MENU: desconta o menu dos dois lados
+          (window.innerHeight - alturaReservada()) * 1.414 // ALTERADO: antes era (window.innerHeight - 110)
+        );
+        largura = Math.max(largura, 240); // NOVO-MENU: tamanho mínimo, para o cartão nunca sumir em janelas muito estreitas
+        raiz.style.setProperty('--largura-cartao', largura + 'px');
+      }
+
+      calcular();
+      ajustarPagina();
+
+      // NOVO: quando as fontes terminam de carregar, recalcula uma vez
+      // para o cartão continuar cabendo sem rolagem.
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          calcular();
+          ajustarPagina();
+        });
+      }
+
+      window.addEventListener('resize', function () {
+        if (window.devicePixelRatio !== dprAnterior) {
+          dprAnterior = window.devicePixelRatio; // foi zoom: mantém o tamanho
+        } else {
+          calcular(); // foi redimensionamento da janela: recalcula
+        }
+        ajustarPagina();
+      });
+    })();
+  </script>
+
+  <!-- ===================== LIVRO, CAPA, MENU E MODO PDF ===================== -->
+  <script>
+    (function () {
+      // ---------- 1) O LIVRO: uma lista de páginas prontas ----------
+      // Cada item é o conteúdo (HTML) de uma folha A4.
+      // No futuro, é o editor que vai gerar essa lista ao exportar.
+      const L1 = 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.';
+      const L2 = 'Fusce est. Vivamus a tellus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin pharetra nonummy pede.';
+      const L3 = 'Vivamus a tellus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin pharetra nonummy pede. Mauris et orci. Aenean nec lorem.';
+      const L4 = 'In porttitor. Donec laoreet nonummy augue. Suspendisse dui purus, scelerisque at, vulputate vitae, pretium mattis, nunc. Mauris eget neque at sem venenatis eleifend. Ut nonummy.';
+
+      const p = function (t) { return '<p>' + t + '</p>'; };
+
+      const paginas = [
+        '<h2>1 Primeiro Tópico</h2>' + p(L1) + p(L2) + p(L1 + ' ' + L2) + p(L3) + p(L4) + p(L2) + p(L1) + p(L3),
+        p(L4) + p(L1) + p(L2) + '<h2>2 Segundo Tópico</h2>' + p(L1) + p(L2) + p(L3) + p(L1 + ' ' + L4),
+        '<h2>3 Terceiro Tópico</h2>' + p(L1) + p(L2) + p(L3) + '<h2>4 Quarto Tópico</h2>' + p(L1) + p(L2),
+        p(L4) + p(L3) + p(L2) + p(L1) + p(L1 + ' ' + L3) + p(L2) + p(L4) + p(L1) + p(L3) + p(L2),
+        '<h2>5 Quinto Tópico</h2>' + p(L1) + p(L2)
+      ];
+      // NOVO-CONTRA: o livro de exemplo tem uma folha de capa no começo e uma de contra-capa no fim
+      const TOTAL_LIVRO = paginas.length + 2;
+
+      // ---------- 2) Elementos ----------
+      const livro = document.getElementById('livro');
+      const miolo = document.getElementById('miolo'); // NOVO-CAPA
+      const esq = document.getElementById('paginaEsq');
+      const dir = document.getElementById('paginaDir');
+      const visor = document.getElementById('visor');           // NOVO-VISOR
+      const visorZona = document.getElementById('visorZona');   // NOVO-VISOR
+      const btnVoltar = document.getElementById('btnVoltar');
+      const btnAvancar = document.getElementById('btnAvancar');
+
+      const btnLivro = document.getElementById('btnLivro');
+      const btnPdf = document.getElementById('btnPdf');
+      const btnEditor = document.getElementById('btnEditor');     // só existe na versão do editor
+      const avisoEditor = document.getElementById('avisoEditor'); // só existe na versão do editor
+      const solta = document.getElementById('solta');
+      const soltaTitulo = document.getElementById('soltaTitulo');
+      const soltaTexto = document.getElementById('soltaTexto');
+      const inputPdf = document.getElementById('arquivoPdf');
+
+      const LARGURA_FOLHA = 794; // A4 a 96 dpi (794 x 1123 px)
+      const ALTURA_FOLHA = 1123;
+      const RESOLUCAO_PDF = 2;   // o PDF é desenhado com o dobro do tamanho da folha, para ficar nítido
+      const DURACAO = 650;       // NOVO-CAPA: duração (ms) da animação de virar página, abrir e fechar
+      livro.style.setProperty('--duracao-virada', DURACAO + 'ms');
+
+      // ---------- 3) Estado ----------
+      let modo = 'livro';                  // 'livro' | 'pdf' | 'editor'
+      const estado = { livro: 0, pdf: 0 }; // abertura atual de cada modo (0 = capa)
+      let pdfDoc = null;                   // PDF carregado (some ao atualizar a página)
+      let zonaOcupada = false;             // true enquanto carrega ou mostra erro: mantém a área de "arraste um PDF" visível
+      let tokenDesenho = 0;                // evita que um desenho antigo termine depois de um novo
+      let cargaAtual = 0;                  // evita que um PDF antigo termine depois de um novo
+      let animacao = null;                 // NOVO-CAPA: animação de virar página em andamento
+      let esperando = false;               // NOVO-CAPA: true enquanto as páginas da próxima abertura estão sendo preparadas
+
+      const TITULO_PADRAO = 'Arraste um PDF aqui';
+      const TEXTO_PADRAO = 'ou clique para escolher um arquivo do seu computador';
+
+      function movimentoReduzido() {
+        return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
+
+      // ---------- 4) Páginas e aberturas ----------
+      // Aberturas (os pares de páginas visíveis). A primeira folha é a capa e a última é a contra-capa:
+      //   0         = capa, sozinha e centralizada;
+      //   1, 2, ... = páginas internas de duas em duas (páginas 2 e 3, 4 e 5...);
+      //   última    = contra-capa, sozinha e centralizada (espelho da capa).
+      // Se o número de páginas internas for ímpar, a última abertura interna fica com
+      // a página da direita em branco (folha de guarda), antes da contra-capa.
+      function totalPaginas() {
+        if (modo === 'livro') return TOTAL_LIVRO; // ALTERADO-CONTRA: inclui capa e contra-capa
+        if (modo === 'pdf' && pdfDoc) return pdfDoc.numPages;
+        return 0;
+      }
+
+      function totalAberturas() {
+        const n = totalPaginas();
+        if (n === 0) return 0;
+        if (n === 1) return 1; // só a capa
+        return 2 + Math.ceil((n - 2) / 2);
+      }
+
+      // quais páginas (índices a partir de 0) aparecem na abertura s; null = em branco
+      function paginasDe(s) {
+        const n = totalPaginas();
+        if (s <= 0) return { capa: true, contra: false, esq: null, dir: n > 0 ? 0 : null };
+        if (n >= 2 && s >= totalAberturas() - 1) return { capa: false, contra: true, esq: n - 1, dir: null };
+        const interna = function (i) { return (i >= 1 && i <= n - 2) ? i : null; };
+        return { capa: false, contra: false, esq: interna(2 * s - 1), dir: interna(2 * s) };
+      }
+
+      // ---------- 5) Folha de texto do livro ----------
+      // ALTERADO-CONTRA: índice 0 = capa, último = contra-capa (sem número); as páginas de texto
+      // são numeradas a partir de 1
+      function montarFolha(indice) {
+        if (indice < 0 || indice >= TOTAL_LIVRO) return ''; // página em branco
+        if (indice === 0) return '<div class="folha folha-especial"><div class="titulo-especial">Capa</div></div>';
+        if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial"><div class="titulo-especial">Contra-capa</div></div>';
+        return '<div class="folha">' + paginas[indice - 1] +
+               '<div class="num">' + indice + '</div></div>';
+      }
+
+      // ---------- 6) Leitor de PDF (biblioteca PDF.js, carregada pela internet) ----------
+      const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      let promessaPdfJs = null;
+
+      // só baixa a biblioteca quando o leitor realmente abre um PDF
+      function carregarPdfJs() {
+        const existente = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+        if (existente) return Promise.resolve(existente);
+        if (!promessaPdfJs) {
+          promessaPdfJs = new Promise(function (resolve, reject) {
+            const s = document.createElement('script');
+            s.src = PDFJS_URL;
+            s.onload = function () {
+              const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+              if (!lib) { promessaPdfJs = null; reject(new Error('rede')); return; }
+              lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+              resolve(lib);
+            };
+            s.onerror = function () { promessaPdfJs = null; reject(new Error('rede')); };
+            document.head.appendChild(s);
+          });
+        }
+        return promessaPdfJs;
+      }
+
+      // ALTERADO-CAPA: as folhas do PDF agora ficam guardadas (cache), assim a mesma folha
+      // pode ser movida para a página que está virando e as próximas já ficam prontas.
+      const cachePdf = new Map(); // índice da página (0, 1, 2...) -> Promise da folha (elemento)
+
+      function liberar(folha) {
+        if (!folha) return;
+        const c = folha.querySelector && folha.querySelector('canvas');
+        if (c) { c.width = 0; c.height = 0; }
+        if (folha.parentNode) folha.parentNode.removeChild(folha);
+      }
+
+      function limparCachePdf() {
+        cachePdf.forEach(function (pr) { pr.then(liberar).catch(function () {}); });
+        cachePdf.clear();
+      }
+
+      // guarda só as folhas da abertura atual e das vizinhas
+      function podarCachePdf(s) {
+        const manter = new Set();
+        [s - 1, s, s + 1].forEach(function (k) {
+          const pg = paginasDe(k);
+          [pg.esq, pg.dir].forEach(function (i) { if (i !== null) manter.add(i); });
+        });
+        Array.from(cachePdf.keys()).forEach(function (i) {
+          if (!manter.has(i)) {
+            const pr = cachePdf.get(i);
+            cachePdf.delete(i);
+            pr.then(liberar).catch(function () {});
+          }
+        });
+      }
+
+      // desenha a página `idx` (a partir de 0) do PDF dentro de uma folha A4, sem distorcer
+      function obterFolhaPdf(idx) {
+        if (!pdfDoc || idx < 0 || idx >= pdfDoc.numPages) return Promise.resolve(null);
+        if (!cachePdf.has(idx)) {
+          const promessa = pdfDoc.getPage(idx + 1).then(function (pagina) {
+            const base = pagina.getViewport({ scale: 1 });
+            const encaixe = Math.min(LARGURA_FOLHA / base.width, ALTURA_FOLHA / base.height);
+            const vp = pagina.getViewport({ scale: encaixe * RESOLUCAO_PDF });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.floor(vp.width);
+            canvas.height = Math.floor(vp.height);
+            canvas.style.width = (vp.width / RESOLUCAO_PDF) + 'px';
+            canvas.style.height = (vp.height / RESOLUCAO_PDF) + 'px';
+            const folha = document.createElement('div');
+            folha.className = 'folha folha-pdf';
+            folha.appendChild(canvas);
+            return pagina.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise
+              .then(function () { return folha; });
+          });
+          promessa.catch(function () { cachePdf.delete(idx); }); // falhou: tenta de novo na próxima vez
+          cachePdf.set(idx, promessa);
+        }
+        return cachePdf.get(idx);
+      }
+
+      // deixa prontas as folhas das aberturas vizinhas, para virar sem espera
+      function precarregar(s) {
+        const T = totalAberturas();
+        [s + 1, s - 1].forEach(function (k) {
+          if (k < 0 || k >= T) return;
+          const pg = paginasDe(k);
+          [pg.esq, pg.dir].forEach(function (i) {
+            if (i !== null) obterFolhaPdf(i).catch(function () {});
+          });
+        });
+      }
+
+      function definirZona(titulo, texto, ocupada) {
+        soltaTitulo.textContent = titulo;
+        soltaTexto.textContent = texto;
+        zonaOcupada = ocupada;
+      }
+
+      function abrirArquivo(arquivo) {
+        if (!arquivo) return;
+        entrarModo('pdf');
+        const ehPdf = arquivo.type === 'application/pdf' || /\.pdf$/i.test(arquivo.name);
+        if (!ehPdf) {
+          definirZona('Esse arquivo não é um PDF', 'Clique ou arraste um arquivo PDF.', true);
+          desenhar();
+          return;
+        }
+        const minhaCarga = ++cargaAtual;
+        definirZona('Carregando o PDF…', '', true);
+        desenhar();
+
+        Promise.all([carregarPdfJs(), arquivo.arrayBuffer()])
+          .then(function (r) { return r[0].getDocument({ data: r[1] }).promise; })
+          .then(function (doc) {
+            if (minhaCarga !== cargaAtual) { doc.destroy(); return; }
+            limparCachePdf();
+            if (pdfDoc) pdfDoc.destroy();
+            pdfDoc = doc;
+            estado.pdf = 0;
+            definirZona(TITULO_PADRAO, TEXTO_PADRAO, false);
+            desenhar();
+          })
+          .catch(function (erro) {
+            if (minhaCarga !== cargaAtual) return;
+            let titulo = 'Não foi possível abrir este PDF';
+            let texto = 'Clique ou arraste outro arquivo.';
+            if (erro && erro.message === 'rede') {
+              titulo = 'Não foi possível carregar o leitor de PDF';
+              texto = 'Verifique sua conexão com a internet e tente de novo.';
+            } else if (erro && erro.name === 'PasswordException') {
+              titulo = 'Este PDF tem senha';
+              texto = 'PDFs protegidos por senha não podem ser abertos aqui.';
+            }
+            definirZona(titulo, texto, true);
+            desenhar();
+          });
+      }
+
+      // ---------- 7) Desenho da tela conforme o modo ----------
+      function zonaVisivel() {
+        return modo === 'pdf' && (!pdfDoc || zonaOcupada);
+      }
+
+      // devolve uma Promise com a folha (elemento) da página `idx`, ou null se for página em branco
+      function obterFolha(idx, m) {
+        if (idx === null) return Promise.resolve(null);
+        if (m === 'pdf') return obterFolhaPdf(idx);
+        const t = document.createElement('div');
+        t.innerHTML = montarFolha(idx);
+        return Promise.resolve(t.firstChild);
+      }
+
+      function colocar(destino, folha) {
+        destino.textContent = '';
+        if (folha) destino.appendChild(folha);
+      }
+
+      function atualizarBotoes() {
+        const n = totalPaginas();
+        const T = totalAberturas();
+        const s = (modo === 'livro' || modo === 'pdf') ? estado[modo] : 0;
+        const zona = zonaVisivel();
+        btnVoltar.disabled = (n === 0) || zona || s <= 0;
+        btnAvancar.disabled = (n === 0) || zona || s >= T - 1;
+        atualizarVisor();
+      }
+
+      // NOVO-VISOR: "2–3 / 7" (as duas páginas visíveis / total de folhas); "1 / 7" na capa
+      function atualizarVisor() {
+        const n = totalPaginas();
+        const mostrar = (modo === 'livro' || modo === 'pdf') && n > 0 && !zonaVisivel();
+        visorZona.classList.toggle('escondido', !mostrar);
+        if (!mostrar) return;
+        const pg = paginasDe(estado[modo]);
+        const nums = [pg.esq, pg.dir]
+          .filter(function (i) { return i !== null; })
+          .map(function (i) { return i + 1; });
+        visor.textContent = (nums.length === 2 ? nums[0] + '–' + nums[1] : nums[0]) + ' / ' + n;
+      }
+
+      // mostra a abertura atual de uma vez, sem animação
+      function desenharEstatico() {
+        const token = ++tokenDesenho;
+        const m = modo;
+        const n = totalPaginas();
+        const s = (m === 'livro' || m === 'pdf') ? estado[m] : 0;
+        const pg = paginasDe(s);
+        const emCapa = n > 0 && pg.capa;
+        const emContra = n > 0 && pg.contra; // NOVO-CONTRA
+
+        miolo.classList.remove('animando');
+        miolo.classList.toggle('capa', emCapa);
+        miolo.classList.toggle('contra', emContra);
+        esq.classList.toggle('oculta', emCapa);
+        dir.classList.toggle('oculta', emContra);
+        livro.classList.toggle('modo-pdf', m === 'pdf');
+        solta.classList.toggle('visivel', zonaVisivel());
+        if (avisoEditor) avisoEditor.classList.toggle('visivel', m === 'editor');
+        atualizarBotoes();
+
+        esq.textContent = '';
+        dir.textContent = '';
+        if (n === 0) return;
+
+        Promise.all([obterFolha(pg.esq, m), obterFolha(pg.dir, m)]).then(function (r) {
+          if (token !== tokenDesenho) return;
+          colocar(esq, r[0]);
+          colocar(dir, r[1]);
+          if (m === 'pdf') { podarCachePdf(s); precarregar(s); }
+        }).catch(function () {});
+      }
+
+      // interrompe uma animação em andamento (usado quando o modo muda)
+      function cancelarAnimacao() {
+        if (!animacao) return;
+        clearTimeout(animacao.timer);
+        if (animacao.v.parentNode) animacao.v.parentNode.removeChild(animacao.v);
+        animacao = null;
+        miolo.classList.remove('animando');
+      }
+
+      function desenhar() {
+        cancelarAnimacao();
+        esperando = false;
+        desenharEstatico();
+      }
+
+      // monta a página que vira: frente e verso
+      function criarVirada(tipo, frente, verso) {
+        const v = document.createElement('div');
+        v.className = 'virada virada-' + tipo;
+        const f1 = document.createElement('div');
+        f1.className = 'face frente pagina ' + (tipo === 'proximo' ? 'pagina-dir' : 'pagina-esq');
+        const f2 = document.createElement('div');
+        f2.className = 'face verso pagina ' + (tipo === 'proximo' ? 'pagina-esq' : 'pagina-dir');
+        if (frente) f1.appendChild(frente);
+        if (verso) f2.appendChild(verso);
+        v.appendChild(f1);
+        v.appendChild(f2);
+        return v;
+      }
+
+      // anima a passagem da abertura `de` para a abertura `para`
+      function virar(de, para) {
+        const m = modo;
+        const token = ++tokenDesenho;
+        estado[m] = para;
+        atualizarBotoes();
+
+        if (movimentoReduzido()) { desenharEstatico(); return; } // quem pediu menos movimento não vê animação
+
+        const A = paginasDe(de);
+        const B = paginasDe(para);
+        const proximo = para > de;
+
+        const idxs = [];
+        [A.esq, A.dir, B.esq, B.dir].forEach(function (i) {
+          if (i !== null && idxs.indexOf(i) === -1) idxs.push(i);
+        });
+
+        esperando = true;
+        Promise.all(idxs.map(function (i) { return obterFolha(i, m); })).then(function (lista) {
+          esperando = false;
+          if (token !== tokenDesenho || modo !== m) return;
+
+          const f = {};
+          idxs.forEach(function (i, k) { f[i] = lista[k]; });
+          const el = function (i) { return i === null ? null : f[i]; };
+
+          // avançar: a página da direita vira para a esquerda; voltar: a da esquerda vira para a direita
+          let frente, verso, estEsq, estDir;
+          if (proximo) {
+            frente = el(A.dir); verso = el(B.esq); estEsq = el(A.esq); estDir = el(B.dir);
+          } else {
+            frente = el(A.esq); verso = el(B.dir); estEsq = el(B.esq); estDir = el(A.dir);
+          }
+
+          // estado inicial: o que fica parado embaixo + a página que vai virar por cima
+          colocar(esq, estEsq);
+          colocar(dir, estDir);
+          esq.classList.toggle('oculta', A.capa || B.capa);
+          dir.classList.toggle('oculta', A.contra || B.contra); // NOVO-CONTRA
+          const v = criarVirada(proximo ? 'proximo' : 'anterior', frente, verso);
+          miolo.appendChild(v);
+
+          // liga as transições, registra o estado inicial e então muda para o final
+          miolo.classList.add('animando');
+          void miolo.offsetWidth;
+          miolo.classList.toggle('capa', B.capa);     // abertura/fechamento: o livro recentra e a sombra troca por opacidade
+          miolo.classList.toggle('contra', B.contra); // NOVO-CONTRA: o mesmo, espelhado
+          v.style.transform = proximo ? 'rotateY(-180deg)' : 'rotateY(180deg)';
+
+          const concluir = function () {
+            if (!animacao || animacao.v !== v) return;
+            clearTimeout(animacao.timer);
+            animacao = null;
+            if (proximo) colocar(esq, verso); else colocar(dir, verso); // o verso vira a página parada
+            if (v.parentNode) v.parentNode.removeChild(v);
+            esq.classList.toggle('oculta', B.capa);
+            dir.classList.toggle('oculta', B.contra); // NOVO-CONTRA
+            miolo.classList.remove('animando');
+            if (m === 'pdf') { podarCachePdf(para); precarregar(para); }
+          };
+          animacao = { v: v, concluir: concluir, timer: setTimeout(concluir, DURACAO + 80) };
+        }).catch(function () {
+          esperando = false;
+          if (token === tokenDesenho) desenharEstatico();
+        });
+      }
+
+      function ir(delta) {
+        if (modo !== 'livro' && modo !== 'pdf') return;
+        if (zonaVisivel() || esperando) return;
+        if (animacao) animacao.concluir(); // se apertou de novo no meio da animação, conclui a anterior na hora
+        const T = totalAberturas();
+        if (T === 0) return;
+        const de = estado[modo];
+        const para = Math.max(0, Math.min(T - 1, de + delta));
+        if (para === de) return;
+        virar(de, para);
+      }
+
+      function entrarModo(novo) {
+        modo = novo;
+        btnLivro.classList.toggle('ativo', modo === 'livro');
+        btnLivro.setAttribute('aria-pressed', modo === 'livro');
+        btnPdf.classList.toggle('ativo', modo === 'pdf');
+        btnPdf.setAttribute('aria-pressed', modo === 'pdf');
+        if (btnEditor) {
+          btnEditor.classList.toggle('ativo', modo === 'editor');
+          btnEditor.setAttribute('aria-pressed', modo === 'editor');
+        }
+        desenhar();
+      }
+
+      // ---------- 8) Escala: largura real da página / largura A4 fixa ----------
+      function ajustarEscala() {
+        const escala = esq.clientWidth / LARGURA_FOLHA;
+        livro.style.setProperty('--escala', escala);
+      }
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(ajustarEscala).observe(livro);
+      }
+      window.addEventListener('resize', ajustarEscala);
+
+      // ---------- 9) Botões de navegação e teclado ----------
+      btnVoltar.addEventListener('click', function () { ir(-1); });
+      btnAvancar.addEventListener('click', function () { ir(1); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') ir(-1);
+        if (e.key === 'ArrowRight') ir(1);
+      });
+
+      // ---------- 10) Botões do menu lateral ----------
+      btnLivro.addEventListener('click', function () { entrarModo('livro'); });
+
+      btnPdf.addEventListener('click', function () {
+        const jaEstavaEmPdf = (modo === 'pdf');
+        entrarModo('pdf');
+        // primeira vez, ou clicou de novo estando em PDF: abre a escolha de arquivo
+        if (jaEstavaEmPdf || !pdfDoc) inputPdf.click();
+      });
+
+      if (btnEditor) {
+        btnEditor.addEventListener('click', function () { entrarModo('editor'); });
+      }
+
+      inputPdf.addEventListener('change', function () {
+        const arquivo = inputPdf.files && inputPdf.files[0];
+        inputPdf.value = ''; // permite escolher o mesmo arquivo de novo
+        abrirArquivo(arquivo);
+      });
+
+      // ---------- 11) Arrastar e soltar um PDF em qualquer lugar da página ----------
+      function temArquivos(e) {
+        return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+      }
+      ['dragenter', 'dragover'].forEach(function (nome) {
+        window.addEventListener(nome, function (e) {
+          if (!temArquivos(e)) return;
+          e.preventDefault(); // impede o navegador de abrir o arquivo e sair da página
+          solta.classList.add('arrastando');
+        });
+      });
+      window.addEventListener('dragleave', function (e) {
+        if (e.relatedTarget === null) solta.classList.remove('arrastando');
+      });
+      window.addEventListener('drop', function (e) {
+        if (!temArquivos(e)) return;
+        e.preventDefault();
+        solta.classList.remove('arrastando');
+        abrirArquivo(e.dataTransfer.files[0]);
+      });
+
+      entrarModo('livro');
+      ajustarEscala();
+    })();
+  </script>
+
+  <!-- ===================== NOVO-MOBILE: ZOOM, ARRASTO E MENU DO CELULAR ===================== -->
+  <script>
+    (function () {
+      const raiz = document.documentElement;
+      const cartao = document.querySelector('.cartao');
+      const btnMenu = document.getElementById('btnMenu');
+      const menu = document.getElementById('menuLateral');
+      const fundoMenu = document.getElementById('fundoMenu');
+
+      const ALTURA_BARRA = 48;      // altura da barra de cima (igual ao CSS)
+      const MARGEM_H = 12;          // folga entre o cartão e as bordas laterais da tela
+      const MARGEM_V = 16;          // folga entre o cartão e as barras de cima e de baixo
+      const LARGURA_MIN = 200;
+      const ZOOM_MAX = 4;
+      const PROPORCAO = 420 / 297;  // largura / altura do cartão
+
+      let zoom = 1, tx = 0, ty = 0; // zoom atual e posição do canto superior esquerdo do cartão
+      let larguraBase = 0;          // largura do cartão com zoom 1
+      let quadro = 0;               // desenho agendado
+
+      function celular() { return raiz.classList.contains('mobile'); }
+
+      // tamanho do cartão sem zoom: 93% da largura da tela (ou o que a altura permitir)
+      function medir() {
+        larguraBase = Math.max(LARGURA_MIN, Math.min(
+          window.innerWidth * 0.93,
+          (window.innerHeight - 2 * (ALTURA_BARRA + MARGEM_V)) * PROPORCAO
+        ));
+      }
+
+      function dimensoes() {
+        const w = larguraBase * zoom;
+        return { w: w, h: w / PROPORCAO };
+      }
+
+      // mantém o cartão dentro dos limites: se cabe na tela fica centralizado, se não cabe dá para ver qualquer parte dele
+      function limitar() {
+        const d = dimensoes();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const topo = ALTURA_BARRA + MARGEM_V, base = vh - topo;
+        tx = d.w > vw - 2 * MARGEM_H ? Math.min(MARGEM_H, Math.max(vw - MARGEM_H - d.w, tx)) : (vw - d.w) / 2;
+        ty = d.h > base - topo     ? Math.min(topo,   Math.max(base - d.h, ty))        : (vh - d.h) / 2;
+      }
+
+      function aplicar() {
+        quadro = 0;
+        const d = dimensoes();
+        raiz.style.setProperty('--largura-cartao', d.w + 'px');
+        cartao.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
+      }
+      function agendar() { if (!quadro) quadro = requestAnimationFrame(aplicar); }
+
+      // ---------- gestos: um dedo arrasta, dois dedos fazem zoom (pinça) ----------
+      let gesto = null;      // 'arrasto' | 'pinca' | null
+      let ultimo = null;     // último ponto do arrasto
+      let pinca = null;      // dados da pinça no começo
+      let vx = 0, vy = 0;    // velocidade do arrasto (para continuar deslizando ao soltar)
+      let inerciaId = 0;
+
+      function ignorar(alvo) {
+        return alvo && alvo.closest && alvo.closest('.barra-topo, .menu-lateral, .fundo-menu, .controles, .visor-zona');
+      }
+      function meio(t) { return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }; }
+      function distancia(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+      function pararInercia() { if (inerciaId) { cancelAnimationFrame(inerciaId); inerciaId = 0; } }
+
+      function iniciarPinca(t) {
+        const m = meio(t), d = dimensoes();
+        // guarda qual ponto do cartão está entre os dedos, para ele ficar sob os dedos durante o zoom
+        pinca = { dist: Math.max(1, distancia(t)), zoom: zoom, ux: (m.x - tx) / d.w, uy: (m.y - ty) / d.h };
+        gesto = 'pinca';
+      }
+      function iniciarArrasto(t) {
+        ultimo = { x: t.clientX, y: t.clientY, t: performance.now() };
+        vx = 0; vy = 0;
+        gesto = 'arrasto';
+      }
+
+      document.addEventListener('touchstart', function (e) {
+        if (!celular() || raiz.classList.contains('menu-aberto') || ignorar(e.target)) return;
+        pararInercia();
+        if (e.touches.length >= 2) iniciarPinca(e.touches); else iniciarArrasto(e.touches[0]);
+      }, { passive: true });
+
+      document.addEventListener('touchmove', function (e) {
+        if (!celular() || !gesto) return;
+        if (e.cancelable) e.preventDefault(); // impede o navegador de rolar ou dar zoom na página inteira
+        if (gesto === 'pinca' && e.touches.length >= 2) {
+          const m = meio(e.touches);
+          zoom = Math.min(ZOOM_MAX, Math.max(1, pinca.zoom * distancia(e.touches) / pinca.dist));
+          const d = dimensoes();
+          tx = m.x - pinca.ux * d.w;
+          ty = m.y - pinca.uy * d.h;
+          limitar();
+          agendar();
+        } else if (gesto === 'arrasto' && e.touches.length === 1) {
+          const t = e.touches[0], agora = performance.now();
+          const dt = Math.max(1, agora - ultimo.t);
+          const dx = t.clientX - ultimo.x, dy = t.clientY - ultimo.y;
+          tx += dx; ty += dy;
+          vx = 0.7 * vx + 0.3 * (dx / dt);
+          vy = 0.7 * vy + 0.3 * (dy / dt);
+          ultimo = { x: t.clientX, y: t.clientY, t: agora };
+          limitar();
+          agendar();
+        }
+      }, { passive: false });
+
+      function fimDoToque(e) {
+        if (!celular() || !gesto) return;
+        if (e.touches.length >= 2) { iniciarPinca(e.touches); return; }
+        if (e.touches.length === 1) { iniciarArrasto(e.touches[0]); return; } // soltou um dedo da pinça: segue arrastando
+        const era = gesto;
+        gesto = null; pinca = null;
+        if (era === 'arrasto' && Math.hypot(vx, vy) > 0.15 && performance.now() - ultimo.t < 80) deslizar();
+      }
+      document.addEventListener('touchend', fimDoToque, { passive: true });
+      document.addEventListener('touchcancel', fimDoToque, { passive: true });
+
+      // o cartão continua deslizando um pouco depois de soltar o dedo
+      function deslizar() {
+        let t0 = performance.now();
+        const passo = function (t) {
+          const dt = Math.min(48, t - t0); t0 = t;
+          tx += vx * dt; ty += vy * dt;
+          const f = Math.pow(0.94, dt / 16);
+          vx *= f; vy *= f;
+          const ax = tx, ay = ty;
+          limitar();
+          if (tx !== ax) vx = 0;
+          if (ty !== ay) vy = 0;
+          aplicar();
+          inerciaId = Math.hypot(vx, vy) > 0.02 ? requestAnimationFrame(passo) : 0;
+        };
+        inerciaId = requestAnimationFrame(passo);
+      }
+
+      // iPhone/iPad: impede o zoom de pinça nativo da página
+      ['gesturestart', 'gesturechange'].forEach(function (nome) {
+        document.addEventListener(nome, function (e) { if (celular()) e.preventDefault(); });
+      });
+
+      // ---------- menu (botão de três barrinhas) ----------
+      function abrirMenu(abrir) {
+        raiz.classList.toggle('menu-aberto', abrir);
+        btnMenu.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+        btnMenu.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+      }
+      btnMenu.addEventListener('click', function () { abrirMenu(!raiz.classList.contains('menu-aberto')); });
+      fundoMenu.addEventListener('click', function () { abrirMenu(false); });
+      // escolher uma opção fecha o menu (a ação da opção já foi feita pelo script do livro)
+      menu.addEventListener('click', function (e) {
+        if (celular() && e.target.closest('button')) abrirMenu(false);
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrirMenu(false); });
+
+      // ---------- tela girou, janela mudou ou passou de computador para celular ----------
+      const mq = window.matchMedia(window.__MQ_MOBILE);
+      function aoMudarModo() {
+        raiz.classList.toggle('mobile', mq.matches);
+        pararInercia(); gesto = null; pinca = null;
+        if (mq.matches) { zoom = 1; medir(); limitar(); aplicar(); }
+        else { cartao.style.transform = ''; abrirMenu(false); }
+        window.dispatchEvent(new Event('resize')); // o script das medidas do computador recalcula
+      }
+      if (mq.addEventListener) mq.addEventListener('change', aoMudarModo); else mq.addListener(aoMudarModo);
+
+      window.addEventListener('resize', function () {
+        if (!celular()) return;
+        medir(); limitar(); aplicar();
+      });
+
+      if (celular()) { medir(); limitar(); aplicar(); }
+    })();
+  </script>
+
+</body>
+</html>
