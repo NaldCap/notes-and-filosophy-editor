@@ -612,6 +612,69 @@
     .pe-item button:focus-visible { outline: 3px solid var(--escuro); outline-offset: 2px; }
     .pe-item i { display: block; width: 140px; height: 3px; border-radius: 2px; background: #c8d1d9; }
 
+    /* ---------- NOVO-ZOOM-EDITOR: zoom e arrasto do cartão no computador (só no modo editor) ---------- */
+    /* ALTERADO-VISOR-ZOOM: o visor acompanha o cartão (o script move o .visor-zona junto com ele). */
+    /* Quando o cartão está ampliado (classe zoom-cartao, posta pelo script), ele sai do fluxo e passa a ser
+       posicionado direto na janela (como no celular). O .conjunto-cartao continua com o tamanho original
+       (o script fixa a largura e a altura dele), então o visor não sai do lugar. A barra de ferramentas (z 30),
+       o painel (z 28) e a pílula de setas (z 20) ficam por cima do cartão porque ele está dentro do main (z 2). */
+    html.zoom-cartao:not(.mobile) .conjunto-cartao { transform: none; transition: none; } /* sem transform, o cartão fixo usa a janela como referência */
+    html.zoom-cartao:not(.mobile) .cartao { position: fixed; left: 0; top: 0; transition: none; }
+    html.zoom-cartao.ctrl-apertado:not(.mobile) .area-branca { cursor: grab; } /* ALTERADO-ARRASTO-CTRL: a mãozinha só aparece com o Ctrl apertado */
+    html.arrastando, html.arrastando * { cursor: grabbing !important; user-select: none !important; }
+
+    /* ---------- NOVO-EDICAO: edição do texto selecionado (só no modo editor do computador) ---------- */
+    .folha[contenteditable="true"] { outline: none; cursor: text; overflow: clip; } /* overflow: clip = o texto que passa do fim da folha fica escondido, sem rolar (a paginação automática é a próxima etapa) */
+    .folha[contenteditable="true"] .num { user-select: none; -webkit-user-select: none; pointer-events: none; }
+    .ed-tamanho input {
+      flex: none; width: 38px; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 6px;
+      background: transparent; color: #222; font: inherit; text-align: center; outline: none; cursor: text;
+    }
+    .ed-tamanho input:focus { background: #fff; box-shadow: 0 0 0 1.5px var(--teal); }
+    .ed-negrito.ativo { background: #dcdcdc; } /* a seleção está em negrito */
+    /* sem texto selecionado as ferramentas ficam esmaecidas (a edição só funciona com o texto selecionado) */
+    .barra-editor.sem-selecao .ed-fonte,
+    .barra-editor.sem-selecao .ed-tamanho,
+    .barra-editor.sem-selecao .ed-negrito,
+    .barra-editor.sem-selecao .ed-cor { opacity: 0.5; }
+
+    .ed-popup {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: #f4f4f4;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity 0.15s, transform 0.15s, visibility 0s 0.15s;
+    }
+    .ed-popup.aberto { opacity: 1; visibility: visible; transform: none; transition: opacity 0.15s, transform 0.15s, visibility 0s; }
+    .ed-popup-fonte { flex-direction: column; gap: 2px; }
+    .ed-popup-fonte button {
+      height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent;
+      color: #222; font-size: 16px; text-align: left; white-space: nowrap; cursor: pointer;
+    }
+    .ed-popup-fonte button:hover { background: rgba(0, 0, 0, 0.07); }
+    .ed-popup-fonte button.ativo { background: rgba(18, 181, 184, 0.2); }
+    .ed-popup-cor button {
+      width: 30px; height: 30px; padding: 0; border: 2px solid #f4f4f4; border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3); cursor: pointer; transition: transform 0.1s;
+    }
+    .ed-popup-cor button:hover { transform: scale(1.15); }
+
+    /* ---------- NOVO-PAGINACAO: paginação automática ---------- */
+    /* folha invisível usada só para medir o texto (mesmas regras da .folha, mas sem escala e com altura livre) */
+    .medidor-folha { position: absolute; left: -10000px; top: 0; width: 794px; visibility: hidden; pointer-events: none; }
+    .medidor-folha .folha { transform: none; height: auto; overflow: visible; }
+    /* parágrafo que continua na folha seguinte: a última linha também é justificada, como no meio do parágrafo */
+    .folha p[data-cont-next] { text-align-last: justify; }
+
     /* ---------- NOVO-MOBILE: visão do celular ---------- */
     /* Tudo abaixo só vale com a classe "mobile" no <html> (colocada pelo script do começo da página).
        No computador a barra de cima e o fundo do menu nem aparecem. */
@@ -827,7 +890,7 @@
     <button type="button" class="ed-caixa ed-fonte" id="edFonte" title="Fonte"><span id="edFonteNome">Times New Roman</span></button>
     <div class="ed-caixa ed-tamanho" role="group" aria-label="Tamanho da fonte">
       <button type="button" id="edMenos" aria-label="Diminuir tamanho">&minus;</button>
-      <span id="edTamanho">14,2</span>
+      <input type="text" id="edTamanho" inputmode="decimal" autocomplete="off" value="15" aria-label="Tamanho da fonte (Enter para aplicar)"> <!-- ALTERADO-EDICAO: antes era um texto fixo -->
       <button type="button" id="edMais" aria-label="Aumentar tamanho">+</button>
     </div>
     <button type="button" class="ed-caixa ed-negrito" id="edNegrito" aria-label="Negrito" title="Negrito">N</button>
@@ -835,6 +898,19 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/></svg>
     </button>
     <button type="button" class="ed-caixa ed-titulo" id="edTitulo" title="Marcar como título">Título</button>
+
+    <!-- NOVO-EDICAO: menus suspensos da fonte e da cor (abrem embaixo dos botões) -->
+    <div class="ed-popup ed-popup-fonte" id="popFonte" role="listbox" aria-label="Fonte">
+      <button type="button" data-fonte="Times New Roman" style="font-family: 'Times New Roman', Times, 'Liberation Serif', serif;">Times New Roman</button>
+      <button type="button" data-fonte="Arial" style="font-family: Arial, 'Liberation Sans', Helvetica, sans-serif;">Arial</button>
+    </div>
+    <div class="ed-popup ed-popup-cor" id="popCor" role="listbox" aria-label="Cor do texto">
+      <button type="button" data-cor="#000000" style="background:#000000" aria-label="Preto" title="Preto"></button>
+      <button type="button" data-cor="#ffffff" style="background:#ffffff" aria-label="Branco" title="Branco"></button>
+      <button type="button" data-cor="#d62828" style="background:#d62828" aria-label="Vermelho" title="Vermelho"></button>
+      <button type="button" data-cor="#f5c400" style="background:#f5c400" aria-label="Amarelo" title="Amarelo"></button>
+      <button type="button" data-cor="#1d5fd1" style="background:#1d5fd1" aria-label="Azul" title="Azul"></button>
+    </div>
   </div>
 
   <!-- NOVO-EDITOR: painel do menu do editor (abre pelo botão de três barrinhas) -->
@@ -1036,7 +1112,7 @@
         '<h2>5 Quinto Tópico</h2>' + p(L1) + p(L2)
       ];
       // NOVO-CONTRA: o livro de exemplo tem uma folha de capa no começo e uma de contra-capa no fim
-      const TOTAL_LIVRO = paginas.length + 2;
+      let TOTAL_LIVRO = paginas.length + 2; // ALTERADO-PAGINACAO: muda quando a paginação automática cria ou apaga folhas
 
       // ---------- 2) Elementos ----------
       const livro = document.getElementById('livro');
@@ -1123,8 +1199,10 @@
         if (indice < 0 || indice >= TOTAL_LIVRO) return ''; // página em branco
         if (indice === 0) return '<div class="folha folha-especial"><div class="titulo-especial">Capa</div></div>';
         if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial"><div class="titulo-especial">Contra-capa</div></div>';
-        return '<div class="folha">' + paginas[indice - 1] +
-               '<div class="num">' + indice + '</div></div>';
+        // ALTERADO-EDICAO: no modo editor (computador) a folha é editável; data-pg diz qual item de `paginas` ela é
+        const ed = editorAtivo;
+        return '<div class="folha" data-pg="' + indice + '"' + (ed ? ' contenteditable="true"' : '') + '>' + paginas[indice - 1] +
+               '<div class="num"' + (ed ? ' contenteditable="false"' : '') + '>' + indice + '</div></div>';
       }
 
       // ---------- 6) Leitor de PDF (biblioteca PDF.js, carregada pela internet) ----------
@@ -1491,8 +1569,10 @@
       btnVoltar.addEventListener('click', function () { ir(-1); });
       btnAvancar.addEventListener('click', function () { ir(1); });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft') ir(-1);
-        if (e.key === 'ArrowRight') ir(1);
+        // ALTERADO-EDICAO: dentro do texto ou do campo de tamanho as setas movem o cursor, não viram a página
+        const escrevendo = e.target && e.target.closest && e.target.closest('[contenteditable="true"], input');
+        if (e.key === 'ArrowLeft' && !escrevendo) ir(-1);
+        if (e.key === 'ArrowRight' && !escrevendo) ir(1);
         if (e.key === 'Escape') fecharPainel(); // NOVO-EDITOR
       });
 
@@ -1568,6 +1648,7 @@
 
       // quanto empurrar o cartão para ele não encostar no painel (sem sair da janela pela direita)
       function calcularEmpurrao() {
+        if (zoomEd > 1) return 0; // NOVO-ZOOM-EDITOR: com o cartão ampliado o painel fica POR CIMA dele (print 4), sem empurrar
         const painelDir = painelEditor.offsetLeft + painelEditor.offsetWidth;
         const r = cartaoEl.getBoundingClientRect();
         const esqCartao = r.left - empurrao;
@@ -1597,7 +1678,10 @@
 
       function ligarEditor(ligar) {
         if (ligar === editorAtivo) return;
+        if (!ligar) resetarZoomEd(); // NOVO-ZOOM-EDITOR: ao sair do editor o cartão volta ao tamanho normal
+        if (!ligar && typeof limparEdicao === 'function') limparEdicao(); // NOVO-EDICAO
         editorAtivo = ligar;
+        if (ligar && typeof repaginarTudo === 'function') repaginarTudo(); // NOVO-PAGINACAO: deixa todas as folhas cheias e consistentes
         raizEd.classList.add('trocando'); // deixa o cartão mudar de tamanho suavemente
         clearTimeout(tTroca);
         tTroca = setTimeout(function () { raizEd.classList.remove('trocando'); }, 600);
@@ -1622,6 +1706,905 @@
           raizEd.style.setProperty('--empurrao', empurrao + 'px');
         }
       });
+
+      // ---------- 13) NOVO-ZOOM-EDITOR: zoom e arrasto do cartão no computador (só no modo editor) ----------
+      // Zoom de 1x a 4x (muda de verdade a largura do cartão, como no celular; as bordas não engrossam):
+      //   Ctrl + roda do mouse, pinça do touchpad (o Chrome e o Edge a entregam como Ctrl + roda),
+      //   Ctrl + (mais), Ctrl - (menos) e Ctrl 0 (volta ao tamanho normal).
+      // Arrasto: Ctrl + botão esquerdo do mouse apertados em qualquer ponto da área branca do cartão (folhas incluídas). Sem inércia.
+      // Com o painel do menu aberto os gestos ficam desligados (como no celular). Só o cartão amplia.
+      const ZOOM_MAX_ED = 4;        // zoom máximo (igual ao do celular)
+      const MARGEM_LATERAL_ED = 12; // folga entre o cartão e as laterais da janela
+      const FOLGA_BARRA_ED = 16;    // folga entre o cartão e a pílula de setas
+      const passoZoomEd = 1.25;     // quanto cada Ctrl + / Ctrl - muda o zoom
+      const navEd = document.getElementById('controles');
+      // (visorZona já existe no começo do script)
+
+      let zoomEd = 1;       // zoom atual (1 = tamanho normal)
+      let txEd = 0, tyEd = 0; // posição do canto superior esquerdo do cartão na janela, quando ampliado
+      let homeEd = null;    // posição e tamanho normais do cartão (guardados quando o zoom começa); null = sem zoom
+      let quadroEd = 0;     // desenho agendado
+      let arrastoEd = null; // último ponto do mouse durante o arrasto
+      let zoomGestoEd = 1;  // zoom no começo de um gesto do Safari
+
+      function zoomPermitidoEd() { return editorAtivo && !raizEd.classList.contains('mobile'); }
+
+      function dimsEd() {
+        const w = homeEd.w * zoomEd;
+        return { w: w, h: w * homeEd.h / homeEd.w };
+      }
+
+      // Mantém o cartão em um lugar válido. Se ele cabe na área livre, fica no "repouso" (centro igual ao do cartão normal);
+      // se não cabe, dá para ver qualquer parte dele: o topo nunca desce além do topo normal e a base nunca sobe além da pílula.
+      function limitarEd() {
+        const d = dimsEd();
+        const vw = window.innerWidth;
+        const topo = homeEd.y;
+        const base = navEd.getBoundingClientRect().top - FOLGA_BARRA_ED;
+        const repX = homeEd.x + (homeEd.w - d.w) / 2;
+        const repY = homeEd.y + (homeEd.h - d.h) / 2;
+        if (d.w <= vw - 2 * MARGEM_LATERAL_ED) txEd = repX;
+        else txEd = Math.min(MARGEM_LATERAL_ED, Math.max(vw - MARGEM_LATERAL_ED - d.w, txEd));
+        if (d.h <= base - topo) tyEd = Math.min(Math.max(repY, topo), base - d.h);
+        else tyEd = Math.min(topo, Math.max(base - d.h, tyEd));
+      }
+
+      function aplicarEd() {
+        quadroEd = 0;
+        if (!homeEd) return;
+        const d = dimsEd();
+        cartaoEl.style.width = d.w + 'px';
+        cartaoEl.style.transform = 'translate(' + txEd + 'px, ' + tyEd + 'px)';
+        // o visor fica preso ao cartão: acompanha a borda direita e o centro vertical dele (mantém o tamanho)
+        const dx = (txEd + d.w) - (homeEd.x + homeEd.w);
+        const dy = (tyEd + d.h / 2) - (homeEd.y + homeEd.h / 2);
+        visorZona.style.transform = 'translate(' + dx + 'px, calc(-50% + ' + dy + 'px))';
+      }
+      function agendarEd() { if (!quadroEd) quadroEd = requestAnimationFrame(aplicarEd); }
+
+      // começa o zoom: guarda onde o cartão está e o tira do fluxo, deixando o conjunto com o tamanho de antes
+      function ativarZoomEd() {
+        if (homeEd) return;
+        const r = cartaoEl.getBoundingClientRect();
+        homeEd = { x: r.left, y: r.top, w: r.width, h: r.height };
+        const cs = getComputedStyle(conjuntoCartao);
+        conjuntoCartao.style.width = cs.width;
+        conjuntoCartao.style.height = cs.height;
+        txEd = r.left; tyEd = r.top;
+        raizEd.classList.add('zoom-cartao');
+      }
+
+      // volta ao tamanho e à posição normais
+      function resetarZoomEd() {
+        if (quadroEd) { cancelAnimationFrame(quadroEd); quadroEd = 0; }
+        arrastoEd = null;
+        raizEd.classList.remove('arrastando');
+        zoomEd = 1;
+        if (!homeEd) return;
+        homeEd = null;
+        raizEd.classList.remove('zoom-cartao');
+        cartaoEl.style.width = '';
+        cartaoEl.style.transform = '';
+        visorZona.style.transform = ''; // o visor volta ao lugar normal
+        conjuntoCartao.style.width = '';
+        conjuntoCartao.style.height = '';
+      }
+
+      // muda o zoom mantendo o ponto (px, py) da janela sob o mesmo ponto do cartão
+      function mudarZoomEd(novo, px, py) {
+        novo = Math.min(ZOOM_MAX_ED, Math.max(1, novo));
+        if (novo < zoomEd && novo < 1.01) novo = 1; // perto de 1 ao diminuir: encaixa no tamanho normal
+        if (novo === zoomEd) return;
+        if (novo === 1) { resetarZoomEd(); return; }
+        ativarZoomEd();
+        const d = dimsEd();
+        const u = (px - txEd) / d.w, v = (py - tyEd) / d.h;
+        zoomEd = novo;
+        const n = dimsEd();
+        txEd = px - u * n.w;
+        tyEd = py - v * n.h;
+        limitarEd();
+        agendarEd();
+      }
+
+      // Ctrl + roda (e pinça do touchpad no Chrome/Edge). O preventDefault impede o zoom do navegador no modo editor.
+      window.addEventListener('wheel', function (e) {
+        if (!zoomPermitidoEd() || !e.ctrlKey) return;
+        e.preventDefault();
+        if (painelAberto) return;
+        let dy = e.deltaY;
+        if (e.deltaMode === 1) dy *= 33; else if (e.deltaMode === 2) dy *= 100; // linhas / páginas (Firefox)
+        dy = Math.max(-100, Math.min(100, dy));
+        mudarZoomEd(zoomEd * Math.exp(-dy * 0.002), e.clientX, e.clientY);
+      }, { passive: false });
+
+      // Ctrl + (mais), Ctrl - (menos) e Ctrl 0
+      document.addEventListener('keydown', function (e) {
+        if (!zoomPermitidoEd() || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const mais = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd';
+        const menos = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract';
+        const zero = e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0';
+        if (!mais && !menos && !zero) return;
+        e.preventDefault();
+        if (painelAberto) return;
+        if (zero) { resetarZoomEd(); return; }
+        mudarZoomEd(zoomEd * (mais ? passoZoomEd : 1 / passoZoomEd), window.innerWidth / 2, window.innerHeight / 2);
+      });
+
+      // pinça do touchpad no Safari (eventos de gesto; não testado)
+      document.addEventListener('gesturestart', function (e) {
+        if (!zoomPermitidoEd()) return;
+        e.preventDefault();
+        zoomGestoEd = zoomEd;
+      });
+      document.addEventListener('gesturechange', function (e) {
+        if (!zoomPermitidoEd()) return;
+        e.preventDefault();
+        if (painelAberto) return;
+        mudarZoomEd(zoomGestoEd * e.scale, e.clientX, e.clientY);
+      });
+
+      // arrasto com o mouse (sem inércia: ao soltar, o cartão para na hora)
+      function fimArrastoEd() {
+        arrastoEd = null;
+        raizEd.classList.remove('arrastando');
+      }
+      document.addEventListener('mousedown', function (e) {
+        if (e.button !== 0 || !e.ctrlKey) return; // ALTERADO-ARRASTO-CTRL: só arrasta com o Ctrl apertado
+        if (!zoomPermitidoEd() || painelAberto || zoomEd <= 1) return;
+        const alvo = e.target;
+        if (!alvo || !alvo.closest || !alvo.closest('.cartao')) return; // só começa dentro do cartão (a barra, o painel e a pílula não arrastam)
+        e.preventDefault(); // não seleciona texto nem arrasta imagens nativamente
+        arrastoEd = { x: e.clientX, y: e.clientY };
+        raizEd.classList.add('arrastando');
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!arrastoEd) return;
+        if (!(e.buttons & 1)) { fimArrastoEd(); return; } // soltou o botão fora da janela
+        txEd += e.clientX - arrastoEd.x;
+        tyEd += e.clientY - arrastoEd.y;
+        arrastoEd = { x: e.clientX, y: e.clientY };
+        limitarEd();
+        agendarEd();
+      });
+      window.addEventListener('mouseup', fimArrastoEd);
+      window.addEventListener('blur', function () { fimArrastoEd(); raizEd.classList.remove('ctrl-apertado'); });
+
+      // cursor de mão só enquanto o Ctrl está apertado
+      document.addEventListener('keydown', function (e) { if (e.key === 'Control') raizEd.classList.add('ctrl-apertado'); });
+      document.addEventListener('keyup', function (e) { if (e.key === 'Control') raizEd.classList.remove('ctrl-apertado'); });
+
+      // janela mudou de tamanho (ou zoom do navegador, ou virou celular): o zoom do cartão volta ao normal
+      window.addEventListener('resize', function () { if (homeEd) resetarZoomEd(); });
+
+      // ---------- 14) NOVO-EDICAO: edição do texto selecionado (só no modo editor do computador) ----------
+      // As folhas de texto viram editáveis (contenteditable). As ferramentas da barra (fonte, tamanho, negrito, cor)
+      // só funcionam com texto SELECIONADO. Cada alteração é gravada de volta na lista `paginas`, para o texto
+      // continuar lá quando a página for virada. Salvar em arquivo e desfazer/refazer ficam para as etapas 6 e 7.
+      const barraEd = document.getElementById('barraEditor');
+      const edFonte = document.getElementById('edFonte');
+      const edFonteNome = document.getElementById('edFonteNome');
+      const edTamanho = document.getElementById('edTamanho');
+      const edMenos = document.getElementById('edMenos');
+      const edMais = document.getElementById('edMais');
+      const edNegrito = document.getElementById('edNegrito');
+      const edCor = document.getElementById('edCor');
+      const popFonte = document.getElementById('popFonte');
+      const popCor = document.getElementById('popCor');
+
+      const PASSO_TAMANHO = 5;   // quanto o + e o − mudam o tamanho
+      const TAMANHO_MIN = 5;
+      const TAMANHO_MAX = 200;   // o tamanho é em pixels da folha A4 (a folha tem 794 px de largura; o texto normal é 15)
+      const FONTES = {
+        'Times New Roman': "'Times New Roman', Times, 'Liberation Serif', serif",
+        'Arial': "Arial, 'Liberation Sans', Helvetica, sans-serif"
+      };
+      const SEL_EDITAVEL = '.folha[contenteditable="true"]';
+      let selSalva = null; // { range, host }: a última seleção feita dentro de uma folha
+
+      try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (err) {} // Enter cria <p>, como no resto do livro
+
+      function temSelecao() { return !!(selSalva && !selSalva.range.collapsed); }
+
+      function formatarTamanho(n) { return String(+n.toFixed(2)).replace('.', ','); }
+      function lerTamanho(txt) {
+        const n = parseFloat(String(txt).trim().replace(',', '.'));
+        return isFinite(n) ? n : null;
+      }
+
+      // grava o conteúdo da folha editada de volta na lista de páginas (sem o número da página)
+      function guardarFolha(host) {
+        const idx = parseInt(host.dataset.pg, 10);
+        if (!(idx >= 1 && idx <= paginas.length)) return;
+        const c = host.cloneNode(true);
+        const num = c.querySelector('.num');
+        if (num) num.remove();
+        paginas[idx - 1] = c.innerHTML;
+        if (typeof repaginarAPartir === 'function') repaginarAPartir(host); // NOVO-PAGINACAO
+      }
+
+      function capturarSelecao() {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return false;
+        const r = sel.getRangeAt(0);
+        const n = r.commonAncestorContainer;
+        const el = n.nodeType === 1 ? n : n.parentElement;
+        const host = el && el.closest && el.closest(SEL_EDITAVEL);
+        if (!host) return false;
+        selSalva = { range: r.cloneRange(), host: host };
+        return true;
+      }
+
+      // elemento que contém o primeiro trecho de texto realmente selecionado (é dele que se lê fonte, tamanho e negrito)
+      function elementoDoInicio(range) {
+        let n = range.startContainer;
+        if (n.nodeType !== 3) {
+          const raizBusca = n.childNodes[range.startOffset] || n;
+          const w = document.createTreeWalker(raizBusca.nodeType === 3 ? raizBusca.parentNode : raizBusca, NodeFilter.SHOW_TEXT);
+          let t, achou = null;
+          while ((t = w.nextNode())) {
+            if (t.textContent.trim() && range.intersectsNode(t)) { achou = t; break; }
+          }
+          if (achou) n = achou;
+        }
+        return n.nodeType === 1 ? n : n.parentElement;
+      }
+
+      // mostra na barra o que a seleção tem hoje (fonte, tamanho, negrito)
+      function atualizarBarraEd() {
+        const tem = temSelecao();
+        barraEd.classList.toggle('sem-selecao', !tem);
+        if (!tem) return;
+        const el = elementoDoInicio(selSalva.range);
+        if (!el) return;
+        const cs = getComputedStyle(el);
+        const nome = /arial|helvetica|liberation sans/i.test(cs.fontFamily.split(',')[0]) ? 'Arial' : 'Times New Roman';
+        edFonteNome.textContent = nome;
+        Array.prototype.forEach.call(popFonte.querySelectorAll('button'), function (b) {
+          b.classList.toggle('ativo', b.dataset.fonte === nome);
+        });
+        if (document.activeElement !== edTamanho) edTamanho.value = formatarTamanho(parseFloat(cs.fontSize));
+        edNegrito.classList.toggle('ativo', parseInt(cs.fontWeight, 10) >= 600);
+      }
+
+      document.addEventListener('selectionchange', function () {
+        if (!editorAtivo) return;
+        if (barraEd.contains(document.activeElement)) return; // digitando no campo do tamanho: guarda a seleção da folha
+        if (!capturarSelecao()) selSalva = null;
+        atualizarBarraEd();
+      });
+
+      // roda uma alteração sobre o texto selecionado (devolve false se não há seleção)
+      function comSelecao(fn) {
+        if (!editorAtivo || !temSelecao()) return false;
+        const host = selSalva.host;
+        if (!host.isConnected) { selSalva = null; atualizarBarraEd(); return false; }
+        if (document.activeElement !== host) host.focus({ preventScroll: true });
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(selSalva.range);
+        document.execCommand('styleWithCSS', false, true);
+        fn(host);
+        guardarFolha(host);
+        capturarSelecao();
+        atualizarBarraEd();
+        return true;
+      }
+
+      function aplicarFonte(nome) {
+        comSelecao(function () { document.execCommand('fontName', false, FONTES[nome]); });
+      }
+
+      function aplicarCor(cor) {
+        comSelecao(function () { document.execCommand('foreColor', false, cor); });
+      }
+
+      function alternarNegrito() {
+        comSelecao(function () { document.execCommand('bold'); });
+      }
+
+      // O navegador só sabe aplicar tamanhos de 1 a 7. Aplica o 7 e troca cada <font size="7"> por um <span> com o tamanho em px.
+      function aplicarTamanho(px) {
+        px = Math.min(TAMANHO_MAX, Math.max(TAMANHO_MIN, px));
+        const ok = comSelecao(function (host) {
+          document.execCommand('styleWithCSS', false, false);
+          document.execCommand('fontSize', false, '7');
+          document.execCommand('styleWithCSS', false, true);
+          const fontes = host.querySelectorAll('font[size="7"]');
+          if (!fontes.length) return;
+          let primeiro = null, ultimo = null;
+          Array.prototype.forEach.call(fontes, function (f) {
+            const sp = document.createElement('span');
+            sp.style.fontSize = px + 'px';
+            while (f.firstChild) sp.appendChild(f.firstChild);
+            f.parentNode.replaceChild(sp, f);
+            if (!primeiro) primeiro = sp;
+            ultimo = sp;
+          });
+          const nr = document.createRange();
+          nr.setStart(primeiro, 0);
+          nr.setEnd(ultimo, ultimo.childNodes.length);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(nr);
+        });
+        if (ok) edTamanho.value = formatarTamanho(px);
+      }
+
+      // ----- menus suspensos (fonte e cor) -----
+      function fecharPopups(exceto) {
+        [popFonte, popCor].forEach(function (p) { if (p !== exceto) p.classList.remove('aberto'); });
+      }
+      function alternarPopup(pop, botao) {
+        fecharPopups(pop);
+        if (pop.classList.contains('aberto')) { pop.classList.remove('aberto'); return; }
+        if (!temSelecao()) return; // sem texto selecionado não há o que alterar
+        pop.style.left = botao.offsetLeft + 'px';
+        pop.classList.add('aberto');
+      }
+
+      // clicar nos botões da barra não tira o foco (nem a seleção) do texto; só o campo do tamanho recebe o foco
+      barraEd.addEventListener('mousedown', function (e) {
+        if (e.target !== edTamanho) e.preventDefault();
+      });
+      document.addEventListener('mousedown', function (e) {
+        if (e.target.closest && !e.target.closest('.ed-popup, #edFonte, #edCor')) fecharPopups();
+      });
+
+      edFonte.addEventListener('click', function () { alternarPopup(popFonte, edFonte); });
+      edCor.addEventListener('click', function () { alternarPopup(popCor, edCor); });
+      popFonte.addEventListener('click', function (e) {
+        const b = e.target.closest('button[data-fonte]');
+        if (!b) return;
+        fecharPopups();
+        aplicarFonte(b.dataset.fonte);
+      });
+      popCor.addEventListener('click', function (e) {
+        const b = e.target.closest('button[data-cor]');
+        if (!b) return;
+        fecharPopups();
+        aplicarCor(b.dataset.cor);
+      });
+      edNegrito.addEventListener('click', alternarNegrito);
+
+      // tamanho: + e − mudam de PASSO_TAMANHO em PASSO_TAMANHO; o campo aceita um número (com vírgula) + Enter
+      function passoTamanho(sinal) {
+        if (!temSelecao()) return;
+        const base = lerTamanho(edTamanho.value);
+        if (base === null) { atualizarBarraEd(); return; }
+        aplicarTamanho(Math.round((base + sinal * PASSO_TAMANHO) * 100) / 100);
+      }
+      edMais.addEventListener('click', function () { passoTamanho(1); });
+      edMenos.addEventListener('click', function () { passoTamanho(-1); });
+      edTamanho.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const n = lerTamanho(edTamanho.value);
+          if (n === null || !temSelecao()) { edTamanho.blur(); atualizarBarraEd(); return; }
+          aplicarTamanho(n); // devolve o foco para a folha (comSelecao)
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          edTamanho.blur();
+          atualizarBarraEd();
+        }
+      });
+      edTamanho.addEventListener('blur', function () { atualizarBarraEd(); }); // sem Enter, o que foi digitado é descartado
+
+      // ----- eventos dentro das folhas -----
+      document.addEventListener('input', function (e) {
+        const host = e.target.closest && e.target.closest(SEL_EDITAVEL);
+        if (host) guardarFolha(host);
+      });
+
+      // colar entra como texto puro (sem trazer fontes e cores de outros programas)
+      document.addEventListener('paste', function (e) {
+        const host = e.target.closest && e.target.closest(SEL_EDITAVEL);
+        if (!host) return;
+        e.preventDefault();
+        const cd = e.clipboardData || window.clipboardData;
+        const t = cd ? cd.getData('text/plain') : '';
+        if (t) document.execCommand('insertText', false, t);
+      });
+
+      // Ctrl+B = botão N; Ctrl+I e Ctrl+U ficam desligados (itálico e sublinhado não fazem parte desta etapa)
+      document.addEventListener('keydown', function (e) {
+        if (!editorAtivo || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+        if (!(e.target.closest && e.target.closest(SEL_EDITAVEL))) return;
+        const k = (e.key || '').toLowerCase();
+        if (k === 'b') { e.preventDefault(); alternarNegrito(); }
+        else if (k === 'i' || k === 'u') e.preventDefault();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') fecharPopups();
+      });
+
+      // ao sair do editor
+      function limparEdicao() {
+        selSalva = null;
+        fecharPopups();
+        barraEd.classList.add('sem-selecao');
+      }
+      // ---------- 15) NOVO-PAGINACAO: paginação automática ----------
+      // O texto do livro é um fluxo único de blocos (parágrafos e títulos). Depois de cada alteração o fluxo é
+      // redistribuído nas folhas: o que não cabe desce para a próxima folha (um parágrafo pode ser cortado no fim
+      // de uma linha) e, quando se apaga texto, o que está na folha de baixo sobe. A medida é feita numa folha
+      // invisível com as mesmas regras de estilo (.folha), então o resultado é o mesmo que o leitor vai ver.
+      // Um parágrafo cortado ganha marcas: o pedaço de cima recebe data-cont-next e o de baixo recebe data-cont.
+      const LIMITE_TEXTO = ALTURA_FOLHA - 100; // o texto precisa terminar aqui (a margem de baixo da folha é 100px)
+      const medidor = document.createElement('div');
+      medidor.className = 'medidor-folha';
+      medidor.setAttribute('aria-hidden', 'true');
+      const medFolha = document.createElement('div');
+      medFolha.className = 'folha';
+      medidor.appendChild(medFolha);
+      document.body.appendChild(medidor);
+      let compondo = false;      // true durante a digitação com acento ou IME: espera terminar para reorganizar
+      let reorganizando = false;
+
+      // ----- utilidades de texto -----
+      function nosDeTexto(raiz) {
+        const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+        const lista = [];
+        let n;
+        while ((n = w.nextNode())) lista.push(n);
+        return lista;
+      }
+      function comprimento(raiz) {
+        let t = 0;
+        nosDeTexto(raiz).forEach(function (n) { t += n.nodeValue.length; });
+        return t;
+      }
+      // k-ésimo caractere do texto de `raiz` -> { no, off } (no fim de um trecho, escolhe o trecho anterior)
+      function posicaoNoTexto(raiz, k) {
+        const nos = nosDeTexto(raiz);
+        let acc = 0;
+        for (let i = 0; i < nos.length; i++) {
+          const len = nos[i].nodeValue.length;
+          if (k <= acc + len) return { no: nos[i], off: k - acc };
+          acc += len;
+        }
+        const u = nos[nos.length - 1];
+        return u ? { no: u, off: u.nodeValue.length } : null;
+      }
+
+      // ----- blocos de uma folha -----
+      function listaTopo(raiz) {
+        return Array.prototype.filter.call(raiz.childNodes, function (n) {
+          return (n.nodeType === 1 && !n.classList.contains('num')) || (n.nodeType === 3 && n.nodeValue.trim() !== '');
+        });
+      }
+      // devolve sempre um <p> ou <h2> (texto solto e <div> viram parágrafo)
+      function normalizar(item) {
+        if (item.nodeType === 3) {
+          const p = document.createElement('p');
+          p.textContent = item.nodeValue;
+          return p;
+        }
+        if (item.tagName === 'P' || item.tagName === 'H2') return item.cloneNode(true);
+        const p = document.createElement('p');
+        p.innerHTML = item.innerHTML;
+        if (!p.firstChild) p.appendChild(document.createElement('br'));
+        return p;
+      }
+      function serializar(host) {
+        const c = host.cloneNode(true);
+        const num = c.querySelector('.num');
+        if (num) num.remove();
+        return c.innerHTML;
+      }
+      function primeiroEhCont(p) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = paginas[p] || '';
+        const it = listaTopo(tmp)[0];
+        return !!(it && it.nodeType === 1 && it.hasAttribute('data-cont'));
+      }
+
+      // ----- medição -----
+      function cabe(b) { return b.offsetTop + b.offsetHeight <= LIMITE_TEXTO + 0.5; }
+
+      function fragmentoAte(b, k) { // cópia de b só com os k primeiros caracteres
+        const c = b.cloneNode(true);
+        const pos = posicaoNoTexto(c, k);
+        if (pos) {
+          const r = document.createRange();
+          r.setStart(pos.no, pos.off);
+          r.setEnd(c, c.childNodes.length);
+          r.deleteContents();
+        }
+        return c;
+      }
+
+      // maior número de caracteres de b que cabem no que resta da folha (b é o último bloco da folha de medição)
+      function maiorPrefixoQueCabe(b) {
+        const total = comprimento(b);
+        if (total === 0) return 0;
+        const pai = b.parentNode;
+        pai.removeChild(b);
+        let lo = 0, hi = total;
+        while (lo < hi) {
+          const mid = Math.ceil((lo + hi) / 2);
+          const c = fragmentoAte(b, mid);
+          pai.appendChild(c);
+          const ok = cabe(c);
+          pai.removeChild(c);
+          if (ok) lo = mid; else hi = mid - 1;
+        }
+        pai.appendChild(b);
+        return lo;
+      }
+
+      // corta b no caractere k: devolve o pedaço de cima; b passa a ser o pedaço de baixo
+      function dividir(b, k) {
+        const pos = posicaoNoTexto(b, k);
+        const r = document.createRange();
+        r.setStart(b, 0);
+        r.setEnd(pos.no, pos.off);
+        const frag = r.extractContents();
+        const primeiro = document.createElement(b.tagName);
+        Array.prototype.forEach.call(b.attributes, function (a) { primeiro.setAttribute(a.name, a.value); });
+        primeiro.removeAttribute('data-cont-next');
+        primeiro.appendChild(frag);
+        return primeiro;
+      }
+
+      // junta as folhas da página i0 em diante num fluxo contínuo de blocos
+      function construirFluxo(i0) {
+        const blocos = [], lens = [], mapa = [];
+        for (let p = i0; p < paginas.length; p++) {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = paginas[p];
+          const m = [];
+          listaTopo(tmp).forEach(function (item, j) {
+            const el = normalizar(item);
+            const cont = j === 0 && item.nodeType === 1 && item.hasAttribute('data-cont') && blocos.length > 0;
+            el.removeAttribute('data-cont');
+            el.removeAttribute('data-cont-next');
+            if (cont) { // continuação do parágrafo da folha anterior: volta a ser um parágrafo só
+              const mi = blocos.length - 1;
+              const base = lens[mi];
+              blocos[mi].insertAdjacentHTML('beforeend', el.innerHTML);
+              lens[mi] = base + comprimento(el);
+              m.push({ mi: mi, base: base });
+            } else {
+              el.__mi = blocos.length;
+              m.push({ mi: blocos.length, base: 0 });
+              blocos.push(el);
+              lens.push(comprimento(el));
+            }
+          });
+          mapa.push(m);
+        }
+        if (!blocos.length) {
+          const el = document.createElement('p');
+          el.appendChild(document.createElement('br'));
+          el.__mi = 0;
+          blocos.push(el);
+          lens.push(0);
+        }
+        return { blocos: blocos, mapa: mapa };
+      }
+
+      // distribui os blocos em folhas; devolve o HTML de cada folha e onde cada pedaço de texto foi parar
+      function distribuir(blocos) {
+        medFolha.textContent = '';
+        const saida = [], frags = [];
+        let atual = [];
+        const fila = blocos.slice();
+        function fecharPagina() {
+          // um título sozinho no fim da folha vai junto com o texto dele para a próxima
+          while (atual.length > 1 && atual[atual.length - 1].el.tagName === 'H2') {
+            const u = atual.pop();
+            medFolha.removeChild(u.el);
+            fila.unshift(u.el);
+          }
+          const pg = saida.length;
+          atual.forEach(function (x, pos) {
+            frags.push({ mi: x.el.__mi, ini: x.ini, len: x.len, pag: pg, pos: pos });
+          });
+          saida.push(atual.map(function (x) { return x.el.outerHTML; }).join(''));
+          atual = [];
+          medFolha.textContent = '';
+        }
+        let guarda = 0;
+        while (fila.length && guarda++ < 200000) {
+          const b = fila.shift();
+          medFolha.appendChild(b);
+          if (cabe(b)) { atual.push({ el: b, ini: b.__ini || 0, len: comprimento(b) }); continue; }
+          // não cabe: parágrafo pode ser cortado no fim de uma linha
+          if (b.tagName === 'P' && comprimento(b) > 0) {
+            const total = comprimento(b);
+            const k = maiorPrefixoQueCabe(b);
+            if (k > 0 && k < total) {
+              const ini = b.__ini || 0;
+              const primeiro = dividir(b, k);
+              primeiro.__mi = b.__mi;
+              primeiro.setAttribute('data-cont-next', '1');
+              medFolha.removeChild(b);
+              medFolha.appendChild(primeiro);
+              atual.push({ el: primeiro, ini: ini, len: k });
+              b.__ini = ini + k;
+              b.setAttribute('data-cont', '1');
+              fila.unshift(b);
+              fecharPagina();
+              continue;
+            }
+          }
+          if (atual.length === 0) { // sozinho e não cabe nem cortado: fica (o excesso é escondido) para não travar
+            atual.push({ el: b, ini: b.__ini || 0, len: comprimento(b) });
+            fecharPagina();
+            continue;
+          }
+          medFolha.removeChild(b);
+          fila.unshift(b);
+          fecharPagina();
+        }
+        if (atual.length || saida.length === 0) fecharPagina();
+        return { saida: saida, frags: frags };
+      }
+
+      // ----- cursor -----
+      function hostDaPagina(idx) {
+        const lados = [esq, dir];
+        for (let i = 0; i < lados.length; i++) {
+          const h = lados[i].querySelector('.folha[data-pg="' + idx + '"]');
+          if (h) return h;
+        }
+        return null;
+      }
+
+      // onde está a seleção dentro da folha: bloco (j) e caractere dentro do bloco (off), no começo e no fim
+      function selecaoInfo(host) {
+        const s = window.getSelection();
+        if (!s || !s.rangeCount) return null;
+        const r = s.getRangeAt(0);
+        if (!host.contains(r.startContainer) || !host.contains(r.endContainer)) return null;
+        const itens = listaTopo(host);
+        const loc = function (no, off) {
+          let j = -1;
+          for (let i = 0; i < itens.length; i++) { if (itens[i] === no || itens[i].contains(no)) { j = i; break; } }
+          if (j < 0) return { j: 0, off: 0 };
+          const rr = document.createRange();
+          rr.setStart(itens[j], 0);
+          rr.setEnd(no, off);
+          return { j: j, off: rr.toString().length };
+        };
+        const a = loc(r.startContainer, r.startOffset);
+        const b = r.collapsed ? a : loc(r.endContainer, r.endOffset);
+        return { pag: parseInt(host.dataset.pg, 10) - 1, j: a.j, off: a.off, j2: b.j, off2: b.off };
+      }
+
+      function aplicarSelecao(host, j1, o1, j2, o2) {
+        const itens = listaTopo(host);
+        const ponto = function (j, o) {
+          const it = itens[j] || itens[itens.length - 1];
+          if (!it) return { no: host, off: 0 };
+          const pos = posicaoNoTexto(it, o);
+          return pos ? { no: pos.no, off: pos.off } : { no: it, off: 0 };
+        };
+        const a = ponto(j1, o1);
+        const b = (j2 === undefined) ? a : ponto(j2, o2);
+        const r = document.createRange();
+        r.setStart(a.no, a.off);
+        r.setEnd(b.no, b.off);
+        host.focus({ preventScroll: true });
+        const s = window.getSelection();
+        s.removeAllRanges();
+        s.addRange(r);
+      }
+
+      // põe o cursor (ou a seleção) na página p (índice a partir de 0), virando para a abertura dela se for preciso
+      function colocarSelecaoEm(p1, j1, o1, p2, j2, o2, jaRedesenhou) {
+        const idx = p1 + 1;
+        const s = Math.ceil(idx / 2);
+        const fazer = function () {
+          const host = hostDaPagina(idx);
+          if (!host) return;
+          if (p2 !== undefined && p2 !== p1) aplicarSelecao(host, j1, o1);
+          else aplicarSelecao(host, j1, o1, j2, o2);
+        };
+        if (estado.livro !== s) {
+          estado.livro = s;
+          desenhar();            // abertura trocada na hora (sem animação, para não perder o que está sendo digitado)
+          setTimeout(fazer, 0);
+        } else if (jaRedesenhou) {
+          setTimeout(fazer, 0);
+        } else {
+          fazer();
+        }
+      }
+
+      function acharFrag(frags, pt, pagPreferida) {
+        let escolhido = null;
+        for (let i = 0; i < frags.length; i++) {
+          const f = frags[i];
+          if (f.mi !== pt.mi || pt.off < f.ini || pt.off > f.ini + f.len) continue;
+          if (!escolhido) escolhido = f;
+          if (f.pag === pagPreferida) return f; // no limite entre duas folhas, fica na folha onde o cursor já estava
+        }
+        return escolhido;
+      }
+
+      // ----- a reorganização -----
+      // i0: primeira página a refazer; sel: seleção (em índices de página) ou null; forcar: refaz as folhas da tela
+      function repaginar(i0, sel, forcar) {
+        if (reorganizando) return;
+        reorganizando = true;
+        let redesenhou = false;
+        try {
+          const totalAntes = paginas.length;
+          const fl = construirFluxo(i0);
+          let ini = null, fim = null;
+          if (sel && sel.pag >= i0 && fl.mapa[sel.pag - i0]) {
+            const m = fl.mapa[sel.pag - i0];
+            const a = m[sel.j], b = m[sel.j2 === undefined ? sel.j : sel.j2];
+            if (a) ini = { mi: a.mi, off: a.base + sel.off };
+            if (b) fim = { mi: b.mi, off: b.base + (sel.off2 === undefined ? sel.off : sel.off2) };
+          }
+          const d = distribuir(fl.blocos);
+
+          paginas.length = i0;
+          d.saida.forEach(function (h) { paginas.push(h); });
+          TOTAL_LIVRO = paginas.length + 2;
+          const mudouTotal = paginas.length !== totalAntes;
+
+          // abertura atual precisa continuar existindo
+          const maxAb = Math.max(0, totalAberturas() - 1);
+          let precisaRedesenho = false;
+          if (estado.livro > maxAb) { estado.livro = maxAb; precisaRedesenho = true; }
+
+          // as folhas que estão na tela têm que mostrar o que as páginas passaram a ter
+          const esperadas = paginasDe(estado.livro);
+          [esperadas.esq, esperadas.dir].forEach(function (idx) {
+            if (idx === null) return;
+            if (!hostDaPagina(idx)) precisaRedesenho = true;
+          });
+          [esq, dir].forEach(function (lado) {
+            const h = lado.querySelector('.folha[data-pg]');
+            if (!h) return;
+            const p = parseInt(h.dataset.pg, 10) - 1;
+            if (p >= paginas.length) { precisaRedesenho = true; return; }
+            if (serializar(h) !== paginas[p]) {
+              if (forcar || true) {
+                h.innerHTML = paginas[p] + '<div class="num" contenteditable="false">' + (p + 1) + '</div>';
+              }
+            }
+          });
+          if (precisaRedesenho) { desenhar(); redesenhou = true; }
+          else if (mudouTotal) atualizarBotoes();
+
+          // devolve o cursor ao mesmo ponto do texto
+          if (ini) {
+            const f1 = acharFrag(d.frags, ini, sel.pag - i0);
+            const f2 = fim ? acharFrag(d.frags, fim, sel.pag - i0) : f1;
+            if (f1) {
+              const p1 = i0 + f1.pag, o1 = ini.off - f1.ini;
+              const igual = !redesenhou && p1 === sel.pag && f1.pos === sel.j && o1 === sel.off;
+              if (!igual || forcar) {
+                if (f2 && fim) colocarSelecaoEm(p1, f1.pos, o1, i0 + f2.pag, f2.pos, fim.off - f2.ini, redesenhou);
+                else colocarSelecaoEm(p1, f1.pos, o1, undefined, undefined, undefined, redesenhou);
+              }
+            }
+          }
+        } finally {
+          reorganizando = false;
+        }
+      }
+
+      function repaginarAPartir(host) {
+        if (compondo || reorganizando || !editorAtivo) return;
+        const idx = parseInt(host.dataset.pg, 10);
+        if (!(idx >= 1 && idx <= paginas.length)) return;
+        const e = idx - 1;
+        let i0 = Math.max(0, e - 1);
+        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        repaginar(i0, selecaoInfo(host), false);
+      }
+
+      function repaginarTudo() {
+        repaginar(0, null, false);
+      }
+
+      // ----- teclas que cruzam a divisa entre duas folhas -----
+      function hostDoCursor() {
+        const s = window.getSelection();
+        if (!s || !s.rangeCount) return null;
+        const n = s.anchorNode;
+        const el = n && (n.nodeType === 1 ? n : n.parentElement);
+        return (el && el.closest && el.closest(SEL_EDITAVEL)) || null;
+      }
+      function posicaoNaFolha(host) { // { primeiro, ultimo, vazioAntes, vazioDepois } do cursor
+        const s = window.getSelection();
+        const itens = listaTopo(host);
+        const n = s.anchorNode;
+        let j = -1;
+        for (let i = 0; i < itens.length; i++) { if (itens[i] === n || itens[i].contains(n)) { j = i; break; } }
+        const antes = document.createRange();
+        antes.setStart(host, 0);
+        antes.setEnd(s.anchorNode, s.anchorOffset);
+        let depois = '';
+        if (j >= 0) {
+          const rd = document.createRange();
+          rd.setStart(s.anchorNode, s.anchorOffset);
+          rd.setEnd(itens[itens.length - 1], itens[itens.length - 1].childNodes.length);
+          depois = rd.toString();
+        }
+        return { j: j, n: itens.length, antes: antes.toString(), depois: depois };
+      }
+      function apagarUltimoCaractere(el) {
+        const total = comprimento(el);
+        if (!total) return;
+        const a = posicaoNoTexto(el, total - 1), b = posicaoNoTexto(el, total);
+        const r = document.createRange();
+        r.setStart(a.no, a.off);
+        r.setEnd(b.no, b.off);
+        r.deleteContents();
+      }
+
+      // Backspace no começo da folha: apaga o caractere antes (mesmo parágrafo) ou junta com o parágrafo de cima
+      function apagarNoInicioDaFolha(host) {
+        const e = parseInt(host.dataset.pg, 10) - 1;
+        if (e <= 0) return;
+        const ant = document.createElement('div'); ant.innerHTML = paginas[e - 1];
+        const cur = document.createElement('div'); cur.innerHTML = serializar(host);
+        const itAnt = listaTopo(ant), itCur = listaTopo(cur);
+        if (!itAnt.length) { paginas[e - 1] = '<p><br></p>'; itAnt.push(listaTopo(ant)[0]); }
+        const ultimo = itAnt[itAnt.length - 1];
+        const primeiro = itCur[0];
+        if (primeiro && primeiro.nodeType === 1 && primeiro.hasAttribute('data-cont')) {
+          apagarUltimoCaractere(ultimo); // é o mesmo parágrafo: o Backspace apaga o último caractere da folha de cima
+        } else if (primeiro) {
+          if (comprimento(primeiro) > 0) {
+            if (comprimento(ultimo) === 0) ultimo.innerHTML = '';
+            ultimo.insertAdjacentHTML('beforeend', primeiro.nodeType === 1 ? primeiro.innerHTML : primeiro.nodeValue);
+          }
+          if (primeiro.parentNode) primeiro.parentNode.removeChild(primeiro);
+        }
+        const base = comprimento(ultimo) - (primeiro && primeiro.nodeType === 1 && !primeiro.hasAttribute('data-cont') ? comprimento(primeiro) : 0);
+        paginas[e - 1] = ant.innerHTML;
+        paginas[e] = cur.innerHTML;
+        let i0 = Math.max(0, e - 2);
+        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        repaginar(i0, { pag: e - 1, j: itAnt.length - 1, off: Math.max(0, base) }, true);
+      }
+
+      function irParaFimDaPagina(p) {
+        const t = document.createElement('div'); t.innerHTML = paginas[p];
+        const it = listaTopo(t);
+        const j = Math.max(0, it.length - 1);
+        colocarSelecaoEm(p, j, it[j] ? comprimento(it[j]) : 0, undefined, undefined, undefined, false);
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (!editorAtivo || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+        if (e.key !== 'Backspace' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        const host = hostDoCursor();
+        const s = window.getSelection();
+        if (!host || !s.isCollapsed) return;
+        const idx = parseInt(host.dataset.pg, 10);
+        const pos = posicaoNaFolha(host);
+        const noInicio = pos.j === 0 && pos.antes === '';
+        const noFim = pos.j === pos.n - 1 && pos.depois === '';
+        if (e.key === 'Backspace' && noInicio) {
+          e.preventDefault();
+          apagarNoInicioDaFolha(host);
+        } else if (e.key === 'ArrowLeft' && noInicio && idx > 1) {
+          e.preventDefault();
+          irParaFimDaPagina(idx - 2);
+        } else if (e.key === 'ArrowRight' && noFim && idx < paginas.length) {
+          e.preventDefault();
+          colocarSelecaoEm(idx, 0, 0, undefined, undefined, undefined, false);
+        }
+      });
+
+      // acentos e IME: só reorganiza quando a composição termina
+      document.addEventListener('compositionstart', function () { compondo = true; });
+      document.addEventListener('compositionend', function (e) {
+        compondo = false;
+        const host = e.target && e.target.closest && e.target.closest(SEL_EDITAVEL);
+        if (host) guardarFolha(host);
+      });
+
+      barraEd.classList.add('sem-selecao');
 
       entrarModo('livro');
       ajustarEscala();
