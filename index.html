@@ -1412,9 +1412,10 @@
 
         esq.textContent = '';
         dir.textContent = '';
-        if (n === 0) return;
+        if (n === 0) return Promise.resolve();
 
-        Promise.all([obterFolha(pg.esq, m), obterFolha(pg.dir, m)]).then(function (r) {
+        // CORRIGIDO-PAGINACAO: devolve a Promise, para quem precisa saber quando as folhas já estão na tela (cursor ao trocar de página)
+        return Promise.all([obterFolha(pg.esq, m), obterFolha(pg.dir, m)]).then(function (r) {
           if (token !== tokenDesenho) return;
           colocar(esq, r[0]);
           colocar(dir, r[1]);
@@ -1434,7 +1435,7 @@
       function desenhar() {
         cancelarAnimacao();
         esperando = false;
-        desenharEstatico();
+        return desenharEstatico();
       }
 
       // monta a página que vira: frente e verso
@@ -2173,6 +2174,16 @@
           return (n.nodeType === 1 && !n.classList.contains('num')) || (n.nodeType === 3 && n.nodeValue.trim() !== '');
         });
       }
+      // CORRIGIDO-PAGINACAO: tira tags vazias (por exemplo <font></font> que sobram ao cortar um parágrafo),
+      // para elas não se acumularem a cada reorganização. <br> e o que tem <br> dentro ficam.
+      function podarVazios(raiz) {
+        const els = raiz.querySelectorAll('*');
+        for (let i = els.length - 1; i >= 0; i--) {
+          const e = els[i];
+          if (e.tagName !== 'BR' && !e.querySelector('br') && e.textContent === '') e.remove();
+        }
+        return raiz;
+      }
       // devolve sempre um <p> ou <h2> (texto solto e <div> viram parágrafo)
       function normalizar(item) {
         if (item.nodeType === 3) {
@@ -2180,9 +2191,10 @@
           p.textContent = item.nodeValue;
           return p;
         }
-        if (item.tagName === 'P' || item.tagName === 'H2') return item.cloneNode(true);
+        if (item.tagName === 'P' || item.tagName === 'H2') return podarVazios(item.cloneNode(true));
         const p = document.createElement('p');
         p.innerHTML = item.innerHTML;
+        podarVazios(p);
         if (!p.firstChild) p.appendChild(document.createElement('br'));
         return p;
       }
@@ -2244,13 +2256,16 @@
         Array.prototype.forEach.call(b.attributes, function (a) { primeiro.setAttribute(a.name, a.value); });
         primeiro.removeAttribute('data-cont-next');
         primeiro.appendChild(frag);
+        podarVazios(primeiro);
+        podarVazios(b); // o pedaço de baixo também: o corte deixa tags vazias no começo dele
         return primeiro;
       }
 
       // junta as folhas da página i0 em diante num fluxo contínuo de blocos
-      function construirFluxo(i0) {
+      function construirFluxo(i0, fim) {
         const blocos = [], lens = [], mapa = [];
-        for (let p = i0; p < paginas.length; p++) {
+        const ate = fim === undefined ? paginas.length : Math.min(fim, paginas.length); // CORRIGIDO-PAGINACAO: só até a janela
+        for (let p = i0; p < ate; p++) {
           const tmp = document.createElement('div');
           tmp.innerHTML = paginas[p];
           const m = [];
@@ -2311,7 +2326,8 @@
           medFolha.appendChild(b);
           if (cabe(b)) { atual.push({ el: b, ini: b.__ini || 0, len: comprimento(b) }); continue; }
           // não cabe: parágrafo pode ser cortado no fim de uma linha
-          if (b.tagName === 'P' && comprimento(b) > 0) {
+          // CORRIGIDO-PAGINACAO: um título que não cabe nem sozinho numa folha também é cortado (antes o excesso ficava escondido)
+          if ((b.tagName === 'P' || (b.tagName === 'H2' && atual.length === 0)) && comprimento(b) > 0) {
             const total = comprimento(b);
             const k = maiorPrefixoQueCabe(b);
             if (k > 0 && k < total) {
@@ -2402,12 +2418,23 @@
           if (p2 !== undefined && p2 !== p1) aplicarSelecao(host, j1, o1);
           else aplicarSelecao(host, j1, o1, j2, o2);
         };
+        // CORRIGIDO-PAGINACAO: o cursor volta na hora (antes voltava só no próximo ciclo, e uma tecla digitada nesse
+        // intervalo se perdia); a conferência no ciclo seguinte só refaz se o navegador tiver tirado o cursor do lugar
+        const conferir = function () {
+          const sel = window.getSelection();
+          const host = hostDaPagina(idx);
+          if (host && (!sel.rangeCount || !host.contains(sel.anchorNode))) fazer();
+        };
         if (estado.livro !== s) {
           estado.livro = s;
-          desenhar();            // abertura trocada na hora (sem animação, para não perder o que está sendo digitado)
-          setTimeout(fazer, 0);
+          // abertura trocada na hora (sem animação, para não perder o que está sendo digitado); o cursor entra
+          // assim que as folhas novas estão na tela, antes da próxima tecla
+          const pronto = desenhar();
+          Promise.resolve(pronto).then(fazer);
+          setTimeout(conferir, 0);
         } else if (jaRedesenhou) {
-          setTimeout(fazer, 0);
+          fazer();
+          setTimeout(conferir, 0);
         } else {
           fazer();
         }
@@ -2424,15 +2451,53 @@
         return escolhido;
       }
 
+      // CORRIGIDO-PAGINACAO (velocidade): depois de refazer só algumas folhas, as de baixo continuam valendo se o começo
+      // da próxima folha antiga não cabe nem em parte no fim da última folha nova (nem é continuação de parágrafo).
+      function proximaNaoPuxa(d, fim) {
+        if (fim >= paginas.length) return true;
+        const tmp = document.createElement('div');
+        tmp.innerHTML = paginas[fim];
+        const it = listaTopo(tmp);
+        if (!it.length) return false;
+        const prim = it[0];
+        if (prim.nodeType === 1 && prim.hasAttribute('data-cont')) return false;
+        const ultimaNova = d.saida[d.saida.length - 1];
+        const tmp2 = document.createElement('div');
+        tmp2.innerHTML = ultimaNova;
+        const itU = listaTopo(tmp2);
+        if (itU.length && itU[itU.length - 1].nodeType === 1 && itU[itU.length - 1].tagName === 'H2') return false; // título no fim: deixa o fluxo completo decidir
+        const nb = normalizar(prim);
+        nb.removeAttribute('data-cont');
+        nb.removeAttribute('data-cont-next');
+        medFolha.innerHTML = ultimaNova;
+        medFolha.appendChild(nb);
+        let puxa;
+        if (cabe(nb)) puxa = true;
+        else if (nb.tagName === 'P' && comprimento(nb) > 0) puxa = maiorPrefixoQueCabe(nb) > 0;
+        else puxa = false;
+        medFolha.textContent = '';
+        return !puxa;
+      }
+
       // ----- a reorganização -----
       // i0: primeira página a refazer; sel: seleção (em índices de página) ou null; forcar: refaz as folhas da tela
-      function repaginar(i0, sel, forcar) {
+      function repaginar(i0, sel, forcar, tudo) {
         if (reorganizando) return;
         reorganizando = true;
         let redesenhou = false;
+        let reescreveu = false; // CORRIGIDO-PAGINACAO: true quando o conteúdo de uma folha da tela foi reescrito (isso derruba o cursor)
         try {
           const totalAntes = paginas.length;
-          const fl = construirFluxo(i0);
+          // CORRIGIDO-PAGINACAO (velocidade): refaz só uma janela de folhas e aumenta a janela enquanto as de baixo não estiverem estáveis
+          let ate = tudo ? paginas.length : Math.min(paginas.length, Math.max(i0, sel ? sel.pag : i0) + 2);
+          if (ate <= i0) ate = Math.min(paginas.length, i0 + 1);
+          let fl, d;
+          for (;;) {
+            fl = construirFluxo(i0, ate);
+            d = distribuir(fl.blocos);
+            if (ate >= paginas.length || proximaNaoPuxa(d, ate)) break;
+            ate = Math.min(paginas.length, ate + Math.max(2, ate - i0));
+          }
           let ini = null, fim = null;
           if (sel && sel.pag >= i0 && fl.mapa[sel.pag - i0]) {
             const m = fl.mapa[sel.pag - i0];
@@ -2440,10 +2505,9 @@
             if (a) ini = { mi: a.mi, off: a.base + sel.off };
             if (b) fim = { mi: b.mi, off: b.base + (sel.off2 === undefined ? sel.off : sel.off2) };
           }
-          const d = distribuir(fl.blocos);
 
-          paginas.length = i0;
-          d.saida.forEach(function (h) { paginas.push(h); });
+          // troca só a janela refeita (as folhas de baixo, quando estáveis, ficam como estavam)
+          Array.prototype.splice.apply(paginas, [i0, ate - i0].concat(d.saida));
           TOTAL_LIVRO = paginas.length + 2;
           const mudouTotal = paginas.length !== totalAntes;
 
@@ -2466,6 +2530,7 @@
             if (serializar(h) !== paginas[p]) {
               if (forcar || true) {
                 h.innerHTML = paginas[p] + '<div class="num" contenteditable="false">' + (p + 1) + '</div>';
+                reescreveu = true;
               }
             }
           });
@@ -2479,7 +2544,8 @@
             if (f1) {
               const p1 = i0 + f1.pag, o1 = ini.off - f1.ini;
               const igual = !redesenhou && p1 === sel.pag && f1.pos === sel.j && o1 === sel.off;
-              if (!igual || forcar) {
+              // CORRIGIDO-PAGINACAO: se a folha foi reescrita o cursor se perdeu, mesmo que a posição lógica seja a mesma
+              if (!igual || forcar || reescreveu) {
                 if (f2 && fim) colocarSelecaoEm(p1, f1.pos, o1, i0 + f2.pag, f2.pos, fim.off - f2.ini, redesenhou);
                 else colocarSelecaoEm(p1, f1.pos, o1, undefined, undefined, undefined, redesenhou);
               }
@@ -2501,7 +2567,7 @@
       }
 
       function repaginarTudo() {
-        repaginar(0, null, false);
+        repaginar(0, null, false, true);
       }
 
       // ----- teclas que cruzam a divisa entre duas folhas -----
@@ -2567,6 +2633,47 @@
         repaginar(i0, { pag: e - 1, j: itAnt.length - 1, off: Math.max(0, base) }, true);
       }
 
+      // CORRIGIDO-PAGINACAO: Delete no fim da folha: apaga o caractere da folha de baixo (mesmo parágrafo)
+      // ou junta o parágrafo de baixo com o último desta folha
+      function apagarPrimeiroCaractere(el) {
+        const total = comprimento(el);
+        if (!total) return;
+        const nos = nosDeTexto(el).filter(function (n) { return n.nodeValue.length > 0; });
+        if (!nos.length) return;
+        const r = document.createRange();
+        r.setStart(nos[0], 0);
+        r.setEnd(nos[0], 1);
+        r.deleteContents();
+      }
+      function apagarAFrenteNoFimDaFolha(host) {
+        const e = parseInt(host.dataset.pg, 10) - 1;
+        if (e < 0 || e >= paginas.length - 1) return;
+        const atu = document.createElement('div'); atu.innerHTML = serializar(host);
+        const prox = document.createElement('div'); prox.innerHTML = paginas[e + 1];
+        const itAtu = listaTopo(atu), itProx = listaTopo(prox);
+        if (!itAtu.length) { atu.innerHTML = '<p><br></p>'; itAtu.push(listaTopo(atu)[0]); }
+        const ultimo = itAtu[itAtu.length - 1];
+        const primeiro = itProx[0];
+        const baseCursor = comprimento(ultimo);
+        if (primeiro) {
+          if (primeiro.nodeType === 1 && primeiro.hasAttribute('data-cont')) {
+            apagarPrimeiroCaractere(primeiro); // é o mesmo parágrafo: apaga o primeiro caractere da continuação
+            if (comprimento(primeiro) === 0 && primeiro.parentNode) primeiro.parentNode.removeChild(primeiro);
+          } else {
+            if (comprimento(primeiro) > 0) {
+              if (comprimento(ultimo) === 0) ultimo.innerHTML = '';
+              ultimo.insertAdjacentHTML('beforeend', primeiro.nodeType === 1 ? primeiro.innerHTML : primeiro.nodeValue);
+            }
+            if (primeiro.parentNode) primeiro.parentNode.removeChild(primeiro);
+          }
+        }
+        paginas[e] = atu.innerHTML;
+        paginas[e + 1] = prox.innerHTML;
+        let i0 = Math.max(0, e - 1);
+        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        repaginar(i0, { pag: e, j: itAtu.length - 1, off: baseCursor }, true);
+      }
+
       function irParaFimDaPagina(p) {
         const t = document.createElement('div'); t.innerHTML = paginas[p];
         const it = listaTopo(t);
@@ -2576,7 +2683,7 @@
 
       document.addEventListener('keydown', function (e) {
         if (!editorAtivo || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-        if (e.key !== 'Backspace' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        if (e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         const host = hostDoCursor();
         const s = window.getSelection();
         if (!host || !s.isCollapsed) return;
@@ -2587,6 +2694,9 @@
         if (e.key === 'Backspace' && noInicio) {
           e.preventDefault();
           apagarNoInicioDaFolha(host);
+        } else if (e.key === 'Delete' && noFim) {
+          e.preventDefault();
+          apagarAFrenteNoFimDaFolha(host);
         } else if (e.key === 'ArrowLeft' && noInicio && idx > 1) {
           e.preventDefault();
           irParaFimDaPagina(idx - 2);
