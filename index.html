@@ -226,6 +226,14 @@
     }
     .folha p { margin: 0 0 12px; }
     .folha h2:not(:first-child) { margin-top: 34px; }
+
+    /* NOVO-SUMARIO: folhas do sumário automático (as linhas levam à página do título ao clicar) */
+    .folha .sumario-titulo { font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 22px; }
+    .folha .sumario-linha { display: flex; align-items: baseline; gap: 6px; margin: 0 0 9px; font-size: 15px; text-align: left; cursor: pointer; }
+    .folha .sumario-linha .s-texto { flex: 0 1 auto; }
+    .folha .sumario-linha .s-pontos { flex: 1 1 auto; min-width: 14px; border-bottom: 1.5px dotted #777; transform: translateY(-3px); }
+    .folha .sumario-linha .s-pag { flex: none; }
+    .folha .sumario-linha:hover .s-texto { text-decoration: underline; }
     .folha .num {
       position: absolute;
       left: 0;
@@ -1200,7 +1208,8 @@
         if (indice === 0) return '<div class="folha folha-especial"><div class="titulo-especial">Capa</div></div>';
         if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial"><div class="titulo-especial">Contra-capa</div></div>';
         // ALTERADO-EDICAO: no modo editor (computador) a folha é editável; data-pg diz qual item de `paginas` ela é
-        const ed = editorAtivo;
+        const ehSumario = paginas[indice - 1].indexOf('data-sumario') !== -1; // NOVO-SUMARIO: o sumário é gerado, não editado
+        const ed = editorAtivo && !ehSumario;
         return '<div class="folha" data-pg="' + indice + '"' + (ed ? ' contenteditable="true"' : '') + '>' + paginas[indice - 1] +
                '<div class="num"' + (ed ? ' contenteditable="false"' : '') + '>' + indice + '</div></div>';
       }
@@ -1890,6 +1899,7 @@
       const edMais = document.getElementById('edMais');
       const edNegrito = document.getElementById('edNegrito');
       const edCor = document.getElementById('edCor');
+      const edTitulo = document.getElementById('edTitulo'); // NOVO-SUMARIO
       const popFonte = document.getElementById('popFonte');
       const popCor = document.getElementById('popCor');
 
@@ -1966,6 +1976,7 @@
         });
         if (document.activeElement !== edTamanho) edTamanho.value = formatarTamanho(parseFloat(cs.fontSize));
         edNegrito.classList.toggle('ativo', parseInt(cs.fontWeight, 10) >= 600);
+        edTitulo.classList.toggle('ativo', !!(el.closest && el.closest('h2'))); // NOVO-SUMARIO
       }
 
       document.addEventListener('selectionchange', function () {
@@ -2067,6 +2078,57 @@
         aplicarCor(b.dataset.cor);
       });
       edNegrito.addEventListener('click', alternarNegrito);
+
+      // ----- NOVO-SUMARIO: botão "Título" -----
+      // Os parágrafos que têm texto selecionado viram título (<h2>); se todos já são título, voltam a ser parágrafo.
+      // Todo título entra no sumário automático (as primeiras folhas do livro).
+      function trocarTag(el, tag) {
+        const novo = document.createElement(tag);
+        Array.prototype.forEach.call(el.attributes, function (a) { novo.setAttribute(a.name, a.value); });
+        while (el.firstChild) novo.appendChild(el.firstChild);
+        el.parentNode.replaceChild(novo, el);
+        return novo;
+      }
+      function blocoTemTextoSelecionado(bloco, r) {
+        if (!r.intersectsNode(bloco)) return false;
+        const w = document.createTreeWalker(bloco, NodeFilter.SHOW_TEXT);
+        let t;
+        while ((t = w.nextNode())) {
+          if (!t.nodeValue.length || !r.intersectsNode(t)) continue;
+          const ini = t === r.startContainer ? r.startOffset : 0;
+          const fim = t === r.endContainer ? r.endOffset : t.nodeValue.length;
+          if (fim > ini) return true;
+        }
+        return false;
+      }
+      // um parágrafo cortado entre folhas só vale como título se o pedaço inicial for título: sobe até ele
+      function trocarInicioDoParagrafo(idxFolha, tag) {
+        for (let k = idxFolha - 1; k >= 0; k--) {
+          const d = document.createElement('div');
+          d.innerHTML = paginas[k];
+          const it = listaTopo(d);
+          const ult = it[it.length - 1];
+          if (!ult || ult.nodeType !== 1) return;
+          if (ult.tagName.toLowerCase() !== tag) { trocarTag(ult, tag); paginas[k] = d.innerHTML; }
+          if (!ult.hasAttribute('data-cont')) return;
+        }
+      }
+      function alternarTitulo() {
+        comSelecao(function (host) {
+          const r = window.getSelection().getRangeAt(0);
+          const alvo = listaTopo(host).filter(function (b) { return b.nodeType === 1 && blocoTemTextoSelecionado(b, r); });
+          if (!alvo.length) return;
+          const info = selecaoInfo(host);
+          const tag = alvo.every(function (b) { return b.tagName === 'H2'; }) ? 'p' : 'h2';
+          alvo.forEach(function (b) {
+            if (b.tagName.toLowerCase() === tag) return;
+            if (b.hasAttribute('data-cont')) trocarInicioDoParagrafo(parseInt(host.dataset.pg, 10) - 1, tag);
+            trocarTag(b, tag);
+          });
+          if (info) aplicarSelecao(host, info.j, info.off, info.j2, info.off2);
+        });
+      }
+      edTitulo.addEventListener('click', alternarTitulo);
 
       // tamanho: + e − mudam de PASSO_TAMANHO em PASSO_TAMANHO; o campo aceita um número (com vírgula) + Enter
       function passoTamanho(sinal) {
@@ -2479,6 +2541,105 @@
         return !puxa;
       }
 
+      // ----- NOVO-SUMARIO: sumário automático -----
+      // Todo <h2> com texto é um título. O sumário ocupa as primeiras folhas (marcadas com data-sumario), mostra cada
+      // título com o número da folha em que ele começa e é refeito sozinho a cada alteração do texto. Elas não são
+      // editáveis e ficam fora da reorganização do texto (o texto começa na folha nSumario()).
+      let sumarioAssinatura = '';
+      function nSumario() {
+        let n = 0;
+        while (n < paginas.length && paginas[n].indexOf('data-sumario') !== -1) n++;
+        return n;
+      }
+      // títulos do texto (folha onde começam, contada a partir do primeiro texto) na ordem do livro
+      function coletarTitulos(n0) {
+        const out = [];
+        for (let i = n0; i < paginas.length; i++) {
+          if (paginas[i].indexOf('<h2') === -1) continue;
+          const d = document.createElement('div');
+          d.innerHTML = paginas[i];
+          Array.prototype.forEach.call(d.children, function (h) {
+            if (h.tagName !== 'H2' || h.hasAttribute('data-cont')) return; // pedaço de baixo de um título cortado não conta
+            let t = h.textContent.replace(/\s+/g, ' ').trim();
+            if (t.length > 140) t = t.slice(0, 137).replace(/\s+$/, '') + '…'; // linha de sumário nunca passa de uma folha
+            if (t) out.push({ texto: t, rel: i - n0 });
+          });
+        }
+        return out;
+      }
+      // monta as folhas do sumário (o título "Sumário" e uma linha por título), cortando onde não couber
+      function montarPaginasSumario(lista) {
+        const itens = [];
+        const novo = function (classe, ir) {
+          const el = document.createElement('div');
+          el.className = classe;
+          el.setAttribute('data-sumario', '1');
+          if (ir) el.setAttribute('data-ir', String(ir));
+          return el;
+        };
+        const cab = novo('sumario-titulo');
+        cab.textContent = 'Sumário';
+        itens.push(cab);
+        lista.forEach(function (t) {
+          const el = novo('sumario-linha', t.pag);
+          const a = document.createElement('span'); a.className = 's-texto'; a.textContent = t.texto;
+          const b = document.createElement('span'); b.className = 's-pontos';
+          const c = document.createElement('span'); c.className = 's-pag'; c.textContent = String(t.pag);
+          el.appendChild(a); el.appendChild(b); el.appendChild(c);
+          itens.push(el);
+        });
+        const saida = [];
+        medFolha.textContent = '';
+        itens.forEach(function (el) {
+          medFolha.appendChild(el);
+          if (!cabe(el) && medFolha.childNodes.length > 1) {
+            medFolha.removeChild(el);
+            saida.push(medFolha.innerHTML);
+            medFolha.textContent = '';
+            medFolha.appendChild(el);
+          }
+        });
+        if (medFolha.childNodes.length) saida.push(medFolha.innerHTML);
+        medFolha.textContent = '';
+        return saida;
+      }
+      // põe o sumário em dia. Devolve quantas folhas de sumário entraram (+) ou saíram (−) na frente do texto.
+      function sincronizarSumario() {
+        const n0 = nSumario();
+        const titulos = coletarTitulos(n0);
+        if (!titulos.length) {
+          if (!n0) { sumarioAssinatura = ''; return 0; }
+          paginas.splice(0, n0);
+          TOTAL_LIVRO = paginas.length + 2;
+          sumarioAssinatura = '';
+          return -n0;
+        }
+        const assinatura = n0 + '|' + titulos.map(function (t) { return t.rel + ':' + t.texto; }).join('\u0001');
+        if (assinatura === sumarioAssinatura) return 0;
+        let n = n0 || 1;
+        const montar = function (n) {
+          return montarPaginasSumario(titulos.map(function (t) { return { texto: t.texto, pag: t.rel + n + 1 }; }));
+        };
+        let novas = montar(n);
+        if (novas.length !== n) { n = novas.length; novas = montar(n); } // a altura das linhas não depende dos números: fecha em n folhas
+        Array.prototype.splice.apply(paginas, [0, n0].concat(novas));
+        TOTAL_LIVRO = paginas.length + 2;
+        sumarioAssinatura = novas.length + '|' + titulos.map(function (t) { return t.rel + ':' + t.texto; }).join('\u0001');
+        return novas.length - n0;
+      }
+      // clicar numa linha do sumário leva à folha do título
+      function irParaPagina(p) {
+        if (!(p >= 1 && p <= paginas.length) || modoConteudo() !== 'livro') return;
+        const s = Math.ceil(p / 2);
+        if (estado.livro === s) return;
+        estado.livro = s;
+        desenhar();
+      }
+      document.addEventListener('click', function (e) {
+        const l = e.target.closest && e.target.closest('.sumario-linha[data-ir]');
+        if (l) irParaPagina(parseInt(l.getAttribute('data-ir'), 10));
+      });
+
       // ----- a reorganização -----
       // i0: primeira página a refazer; sel: seleção (em índices de página) ou null; forcar: refaz as folhas da tela
       function repaginar(i0, sel, forcar, tudo) {
@@ -2509,11 +2670,13 @@
           // troca só a janela refeita (as folhas de baixo, quando estáveis, ficam como estavam)
           Array.prototype.splice.apply(paginas, [i0, ate - i0].concat(d.saida));
           TOTAL_LIVRO = paginas.length + 2;
+          // NOVO-SUMARIO: refaz o sumário; desl = folhas de sumário que entraram (+) ou saíram (−) na frente do texto
+          const desl = sincronizarSumario();
           const mudouTotal = paginas.length !== totalAntes;
 
           // abertura atual precisa continuar existindo
           const maxAb = Math.max(0, totalAberturas() - 1);
-          let precisaRedesenho = false;
+          let precisaRedesenho = desl !== 0; // a numeração das folhas na tela mudou: redesenha
           if (estado.livro > maxAb) { estado.livro = maxAb; precisaRedesenho = true; }
 
           // as folhas que estão na tela têm que mostrar o que as páginas passaram a ter
@@ -2542,11 +2705,11 @@
             const f1 = acharFrag(d.frags, ini, sel.pag - i0);
             const f2 = fim ? acharFrag(d.frags, fim, sel.pag - i0) : f1;
             if (f1) {
-              const p1 = i0 + f1.pag, o1 = ini.off - f1.ini;
-              const igual = !redesenhou && p1 === sel.pag && f1.pos === sel.j && o1 === sel.off;
+              const p1 = i0 + desl + f1.pag, o1 = ini.off - f1.ini;
+              const igual = !redesenhou && p1 === sel.pag + desl && f1.pos === sel.j && o1 === sel.off;
               // CORRIGIDO-PAGINACAO: se a folha foi reescrita o cursor se perdeu, mesmo que a posição lógica seja a mesma
               if (!igual || forcar || reescreveu) {
-                if (f2 && fim) colocarSelecaoEm(p1, f1.pos, o1, i0 + f2.pag, f2.pos, fim.off - f2.ini, redesenhou);
+                if (f2 && fim) colocarSelecaoEm(p1, f1.pos, o1, i0 + desl + f2.pag, f2.pos, fim.off - f2.ini, redesenhou);
                 else colocarSelecaoEm(p1, f1.pos, o1, undefined, undefined, undefined, redesenhou);
               }
             }
@@ -2561,13 +2724,14 @@
         const idx = parseInt(host.dataset.pg, 10);
         if (!(idx >= 1 && idx <= paginas.length)) return;
         const e = idx - 1;
-        let i0 = Math.max(0, e - 1);
-        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        const ns = nSumario(); // NOVO-SUMARIO: o texto começa depois das folhas do sumário
+        let i0 = Math.max(ns, e - 1);
+        while (i0 > ns && primeiroEhCont(i0)) i0--;
         repaginar(i0, selecaoInfo(host), false);
       }
 
       function repaginarTudo() {
-        repaginar(0, null, false, true);
+        repaginar(nSumario(), null, false, true);
       }
 
       // ----- teclas que cruzam a divisa entre duas folhas -----
@@ -2609,7 +2773,7 @@
       // Backspace no começo da folha: apaga o caractere antes (mesmo parágrafo) ou junta com o parágrafo de cima
       function apagarNoInicioDaFolha(host) {
         const e = parseInt(host.dataset.pg, 10) - 1;
-        if (e <= 0) return;
+        if (e - 1 < nSumario()) return; // NOVO-SUMARIO: na primeira folha do texto não há para onde apagar (o sumário não se edita)
         const ant = document.createElement('div'); ant.innerHTML = paginas[e - 1];
         const cur = document.createElement('div'); cur.innerHTML = serializar(host);
         const itAnt = listaTopo(ant), itCur = listaTopo(cur);
@@ -2628,8 +2792,9 @@
         const base = comprimento(ultimo) - (primeiro && primeiro.nodeType === 1 && !primeiro.hasAttribute('data-cont') ? comprimento(primeiro) : 0);
         paginas[e - 1] = ant.innerHTML;
         paginas[e] = cur.innerHTML;
-        let i0 = Math.max(0, e - 2);
-        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        const ns2 = nSumario();
+        let i0 = Math.max(ns2, e - 2);
+        while (i0 > ns2 && primeiroEhCont(i0)) i0--;
         repaginar(i0, { pag: e - 1, j: itAnt.length - 1, off: Math.max(0, base) }, true);
       }
 
@@ -2669,8 +2834,9 @@
         }
         paginas[e] = atu.innerHTML;
         paginas[e + 1] = prox.innerHTML;
-        let i0 = Math.max(0, e - 1);
-        while (i0 > 0 && primeiroEhCont(i0)) i0--;
+        const ns3 = nSumario();
+        let i0 = Math.max(ns3, e - 1);
+        while (i0 > ns3 && primeiroEhCont(i0)) i0--;
         repaginar(i0, { pag: e, j: itAtu.length - 1, off: baseCursor }, true);
       }
 
@@ -2690,14 +2856,16 @@
         const idx = parseInt(host.dataset.pg, 10);
         const pos = posicaoNaFolha(host);
         const noInicio = pos.j === 0 && pos.antes === '';
-        const noFim = pos.j === pos.n - 1 && pos.depois === '';
+        // CORRIGIDO-PAGINACAO: espaço em branco depois do cursor é invisível no fim do bloco (a quebra de folha deixa um);
+        // sem isto o Delete apagava esse espaço, a reorganização o recolocava e o Delete ficava preso
+        const noFim = pos.j === pos.n - 1 && /^\s*$/.test(pos.depois);
         if (e.key === 'Backspace' && noInicio) {
           e.preventDefault();
           apagarNoInicioDaFolha(host);
         } else if (e.key === 'Delete' && noFim) {
           e.preventDefault();
           apagarAFrenteNoFimDaFolha(host);
-        } else if (e.key === 'ArrowLeft' && noInicio && idx > 1) {
+        } else if (e.key === 'ArrowLeft' && noInicio && idx - 2 >= nSumario()) {
           e.preventDefault();
           irParaFimDaPagina(idx - 2);
         } else if (e.key === 'ArrowRight' && noFim && idx < paginas.length) {
