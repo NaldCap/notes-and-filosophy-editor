@@ -225,7 +225,10 @@
       margin: 0 0 10px;
     }
     .folha p { margin: 0 0 12px; }
-    .folha h2:not(:first-child) { margin-top: 34px; }
+    /* CORRIGIDO-SUMARIO: o espaço antes do título agora é "padding" do próprio título (era margin-top: 34px): clicar nele
+       leva o cursor ao título e o Backspace no começo do título consegue tirá-lo (data-sem-espaco). 12px do parágrafo de cima + 22px = 34px, igual a antes. */
+    .folha h2:not(:first-child) { margin-top: 0; padding-top: 22px; }
+    .folha h2:not(:first-child)[data-sem-espaco] { padding-top: 0; }
 
     /* NOVO-SUMARIO: folhas do sumário automático (as linhas levam à página do título ao clicar) */
     .folha .sumario-titulo { font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 22px; }
@@ -646,7 +649,12 @@
     .barra-editor.sem-selecao .ed-negrito,
     .barra-editor.sem-selecao .ed-cor { opacity: 0.5; }
 
-    .ed-popup {
+        /* NOVO-HISTORICO: botões de desfazer e refazer */
+    .ed-hist { width: 46px; padding: 0; }
+    .ed-hist svg { width: 22px; height: 22px; fill: #333; }
+    .ed-hist:disabled { opacity: 0.35; cursor: default; }
+    .ed-hist:disabled:hover { background: transparent; }
+	.ed-popup {
       position: absolute;
       top: calc(100% + 8px);
       left: 0;
@@ -683,7 +691,11 @@
     /* parágrafo que continua na folha seguinte: a última linha também é justificada, como no meio do parágrafo */
     .folha p[data-cont-next] { text-align-last: justify; }
 
-    /* ---------- NOVO-MOBILE: visão do celular ---------- */
+        /* ---------- NOVO-ARQUIVO: salvar e exportar ---------- */
+    .ed-arq { padding: 0 12px; font-weight: 700; }
+    .ed-arq.ok { background: var(--teal-bg); }
+
+	/* ---------- NOVO-MOBILE: visão do celular ---------- */
     /* Tudo abaixo só vale com a classe "mobile" no <html> (colocada pelo script do começo da página).
        No computador a barra de cima e o fundo do menu nem aparecem. */
     .barra-topo, .fundo-menu { display: none; }
@@ -845,6 +857,121 @@
     html.mobile .deco-topo-dir { width: 100px; }
     html.mobile .deco-base-esq { width: 150px; }
     html.mobile .deco-base-dir { width: 190px; }
+      /* ---------- NOVO-EDITOR-MOBILE: barra de ferramentas do editor no celular ---------- */
+    html.mobile.editor .barra-editor {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: fixed;
+      top: 48px; left: 0; right: 0;
+      height: 50px;
+      padding: 0 8px;
+      z-index: 29;
+      background: #f4f4f4;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+      overflow-x: auto;
+      overflow-y: hidden;
+      touch-action: pan-x;          /* só esta barra rola (para os lados) */
+      scrollbar-width: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    html.mobile.editor .barra-editor::-webkit-scrollbar { display: none; }
+    html.mobile .ed-menu, html.mobile .ed-menu + .ed-div { display: none; } /* o menu do celular é o da barra verde */
+    html.mobile .ed-caixa { height: 36px; font-size: 12px; }
+    html.mobile .ed-fonte { width: 112px; }
+    html.mobile .ed-popup { position: fixed; top: 104px; z-index: 45; }
+        /* NOVO-CAPA-IMG: imagem na capa e na contra-capa, com sombra de livro por cima */
+    .folha-imagem { position: relative; padding: 0; overflow: hidden; }
+    .folha-imagem img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      user-select: none; -webkit-user-drag: none; pointer-events: none;
+    }
+    .folha-imagem::before, .folha-imagem::after { z-index: 2; } /* sombras originais, se existirem, ficam acima da imagem */
+    .folha-imagem .sombra-capa {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.12) 3%, rgba(255,255,255,0.10) 5%, transparent 9%),
+        linear-gradient(to left, rgba(0,0,0,0.10) 0%, transparent 4%);
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.25);
+    }
+    /* contra-capa: a lombada fica do lado direito */
+    .folha-imagem img[alt="Contra-capa"] + .sombra-capa {
+      background:
+        linear-gradient(to left, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.12) 3%, rgba(255,255,255,0.10) 5%, transparent 9%),
+        linear-gradient(to right, rgba(0,0,0,0.10) 0%, transparent 4%);
+    }
+
+        /* NOVO-CAPA-DURA: capa dura com vinco na lombada e bordas abauladas */
+    :root {
+      --capa-canto: 4px;          /* arredondamento do lado de fora (antes 9px) */
+      --capa-canto-lombada: 1px;  /* arredondamento do lado da lombada (antes 3px) */
+      --capa-vinco-escuro: 0.10;  /* força da linha escura do vinco (antes 0.32) */
+      --capa-vinco-claro: 0.11;   /* força da linha clara do vinco (antes 0.65) */
+      --capa-borda: 0.08;         /* escurecido das bordas abauladas (antes 0.22) */
+      --capa-brilho: 0.10;        /* brilho na borda de cima (antes 0.55) */
+      --capa-sombra: 0.32;        /* sombra do livro na mesa (antes 0.30) */
+    }
+
+    .pagina:has(> .folha-imagem img[alt="Capa"]),
+    .miolo.capa .sombra-dir {
+      border-radius: var(--capa-canto-lombada) var(--capa-canto) var(--capa-canto) var(--capa-canto-lombada);
+    }
+    .pagina:has(> .folha-imagem img[alt="Contra-capa"]),
+    .miolo.contra .sombra-esq {
+      border-radius: var(--capa-canto) var(--capa-canto-lombada) var(--capa-canto-lombada) var(--capa-canto);
+    }
+
+        .miolo.capa .sombra-dir {
+      box-shadow:
+        0 4px 8px rgba(0,0,0,var(--capa-sombra)),
+        6px 18px 36px rgba(0,0,0,calc(var(--capa-sombra) * 0.9)),
+        10px 32px 60px rgba(0,0,0,calc(var(--capa-sombra) * 0.5));
+    }
+    .miolo.contra .sombra-esq {
+      box-shadow:
+        0 4px 8px rgba(0,0,0,var(--capa-sombra)),
+        -6px 18px 36px rgba(0,0,0,calc(var(--capa-sombra) * 0.9)),
+        -10px 32px 60px rgba(0,0,0,calc(var(--capa-sombra) * 0.5));
+    }
+
+    .folha-imagem .sombra-capa {
+      background: linear-gradient(to right,
+        rgba(0,0,0,calc(var(--capa-vinco-escuro) * 0.9)) 0%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 0.8%,
+        rgba(0,0,0,0.03) 2%,
+        rgba(0,0,0,var(--capa-vinco-escuro)) 3.4%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 4.2%,
+        rgba(255,255,255,0.06) 5.2%,
+        rgba(0,0,0,0.04) 6.5%,
+        transparent 9%);
+      box-shadow:
+        inset 0 6px 6px -3px rgba(255,255,255,var(--capa-brilho)),
+        inset 0 -10px 14px -4px rgba(0,0,0,var(--capa-borda)),
+        inset -10px 0 14px -4px rgba(0,0,0,var(--capa-borda)),
+        inset 0 0 0 2px rgba(0,0,0,0.06);
+    }
+
+        .folha-imagem img[alt="Contra-capa"] + .sombra-capa {
+      background: linear-gradient(to left,
+        rgba(0,0,0,calc(var(--capa-vinco-escuro) * 0.9)) 0%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 0.8%,
+        rgba(0,0,0,0.03) 2%,
+        rgba(0,0,0,var(--capa-vinco-escuro)) 3.4%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 4.2%,
+        rgba(255,255,255,0.06) 5.2%,
+        rgba(0,0,0,0.04) 6.5%,
+        transparent 9%);
+      box-shadow:
+        inset 0 6px 6px -3px rgba(255,255,255,var(--capa-brilho)),
+        inset 0 -10px 14px -4px rgba(0,0,0,var(--capa-borda)),
+        inset 10px 0 14px -4px rgba(0,0,0,var(--capa-borda)),
+        inset 0 0 0 2px rgba(0,0,0,0.06);
+    }
+
+
   </style>
 </head>
 
@@ -906,8 +1033,21 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/></svg>
     </button>
     <button type="button" class="ed-caixa ed-titulo" id="edTitulo" title="Marcar como título">Título</button>
+	    <!-- NOVO-HISTORICO: desfazer e refazer -->
+    <button type="button" class="ed-caixa ed-hist" id="edDesfazer" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+    </button>
+    <button type="button" class="ed-caixa ed-hist" id="edRefazer" aria-label="Refazer" title="Refazer (Ctrl+Y)" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+    </button>
 
-    <!-- NOVO-EDICAO: menus suspensos da fonte e da cor (abrem embaixo dos botões) -->
+
+        <!-- NOVO-ARQUIVO: salvar e exportar -->
+    <span class="ed-div" aria-hidden="true"></span>
+    <button type="button" class="ed-caixa ed-arq" id="edSalvar" title="Salvar (Ctrl+S)">Salvar</button>
+    <button type="button" class="ed-caixa ed-arq" id="edExportar" title="Baixar o conteudo.js para o leitor">Exportar</button>
+
+	<!-- NOVO-EDICAO: menus suspensos da fonte e da cor (abrem embaixo dos botões) -->
     <div class="ed-popup ed-popup-fonte" id="popFonte" role="listbox" aria-label="Fonte">
       <button type="button" data-fonte="Times New Roman" style="font-family: 'Times New Roman', Times, 'Liberation Serif', serif;">Times New Roman</button>
       <button type="button" data-fonte="Arial" style="font-family: Arial, 'Liberation Sans', Helvetica, sans-serif;">Arial</button>
@@ -1099,6 +1239,7 @@
     })();
   </script>
 
+    <script src="conteudo.js"></script>
   <!-- ===================== LIVRO, CAPA, MENU E MODO PDF ===================== -->
   <script>
     (function () {
@@ -1154,7 +1295,8 @@
       // NOVO-EDITOR: no computador, o modo editor mostra o livro (é onde o texto será escrito).
       // No celular nada muda: o modo editor continua mostrando o aviso "Em construção".
       function modoConteudo() {
-        return (modo === 'editor' && !raizEd.classList.contains('mobile')) ? 'livro' : modo;
+                return modo === 'editor' ? 'livro' : modo; // ALTERADO-EDITOR-MOBILE: o editor também funciona no celular
+
       }
       const estado = { livro: 0, pdf: 0 }; // abertura atual de cada modo (0 = capa)
       let pdfDoc = null;                   // PDF carregado (some ao atualizar a página)
@@ -1205,8 +1347,9 @@
       // são numeradas a partir de 1
       function montarFolha(indice) {
         if (indice < 0 || indice >= TOTAL_LIVRO) return ''; // página em branco
-        if (indice === 0) return '<div class="folha folha-especial"><div class="titulo-especial">Capa</div></div>';
-        if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial"><div class="titulo-especial">Contra-capa</div></div>';
+                        // ALTERADO-CAPA-IMG: mantém a classe folha-especial para não perder as sombras
+        if (indice === 0) return '<div class="folha folha-especial folha-imagem"><img src="capa.jpg" alt="Capa"><span class="sombra-capa"></span></div>';
+        if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial folha-imagem"><img src="contra-capa.jpg" alt="Contra-capa"><span class="sombra-capa"></span></div>';
         // ALTERADO-EDICAO: no modo editor (computador) a folha é editável; data-pg diz qual item de `paginas` ela é
         const ehSumario = paginas[indice - 1].indexOf('data-sumario') !== -1; // NOVO-SUMARIO: o sumário é gerado, não editado
         const ed = editorAtivo && !ehSumario;
@@ -1560,7 +1703,7 @@
           peEditor.classList.toggle('ativo', modo === 'editor');
         }
         // NOVO-EDITOR: a barra de ferramentas só aparece no computador e só no modo editor
-        if (typeof ligarEditor === 'function') ligarEditor(modo === 'editor' && !raizEd.classList.contains('mobile'));
+                if (typeof ligarEditor === 'function') ligarEditor(modo === 'editor'); // ALTERADO-EDITOR-MOBILE
         desenhar();
       }
 
@@ -1691,13 +1834,15 @@
         if (!ligar) resetarZoomEd(); // NOVO-ZOOM-EDITOR: ao sair do editor o cartão volta ao tamanho normal
         if (!ligar && typeof limparEdicao === 'function') limparEdicao(); // NOVO-EDICAO
         editorAtivo = ligar;
-        if (ligar && typeof repaginarTudo === 'function') repaginarTudo(); // NOVO-PAGINACAO: deixa todas as folhas cheias e consistentes
+         if (ligar && typeof repaginarTudo === 'function') { repaginarTudo(); registrarHistorico(); } // NOVO-HISTORICO: ponto de partida
         raizEd.classList.add('trocando'); // deixa o cartão mudar de tamanho suavemente
         clearTimeout(tTroca);
         tTroca = setTimeout(function () { raizEd.classList.remove('trocando'); }, 600);
         if (ligar) definirSaidaMenu(); else fecharPainel();
-        raizEd.classList.toggle('editor', ligar);
+                raizEd.classList.toggle('editor', ligar);
         recalcularCartao();
+        if (window.__recalcularCelular) window.__recalcularCelular(); // NOVO-EDITOR-MOBILE: abre espaço para a barra de ferramentas
+
       }
 
       btnEdMenu.addEventListener('click', function () {
@@ -1932,6 +2077,8 @@
         if (num) num.remove();
         paginas[idx - 1] = c.innerHTML;
         if (typeof repaginarAPartir === 'function') repaginarAPartir(host); // NOVO-PAGINACAO
+		        registrarHistorico(); // NOVO-HISTORICO
+
       }
 
       function capturarSelecao() {
@@ -1979,9 +2126,17 @@
         edTitulo.classList.toggle('ativo', !!(el.closest && el.closest('h2'))); // NOVO-SUMARIO
       }
 
+            // NOVO-EDITOR-MOBILE: no celular, tocar num botão da barra pode tirar a seleção do texto; ela fica guardada
+      let tocandoBarra = false, tBarra = 0;
+      barraEd.addEventListener('touchstart', function () { tocandoBarra = true; clearTimeout(tBarra); }, { passive: true });
+      barraEd.addEventListener('touchend', function () {
+        clearTimeout(tBarra);
+        tBarra = setTimeout(function () { tocandoBarra = false; }, 600);
+      }, { passive: true });
+
       document.addEventListener('selectionchange', function () {
         if (!editorAtivo) return;
-        if (barraEd.contains(document.activeElement)) return; // digitando no campo do tamanho: guarda a seleção da folha
+        if (barraEd.contains(document.activeElement) || tocandoBarra) return; // ALTERADO-EDITOR-MOBILE
         if (!capturarSelecao()) selSalva = null;
         atualizarBarraEd();
       });
@@ -2051,7 +2206,10 @@
         fecharPopups(pop);
         if (pop.classList.contains('aberto')) { pop.classList.remove('aberto'); return; }
         if (!temSelecao()) return; // sem texto selecionado não há o que alterar
-        pop.style.left = botao.offsetLeft + 'px';
+                // ALTERADO-EDITOR-MOBILE: no celular a barra rola para os lados, então usa a posição na tela
+        pop.style.left = raizEd.classList.contains('mobile')
+          ? Math.max(4, botao.getBoundingClientRect().left) + 'px'
+          : botao.offsetLeft + 'px';
         pop.classList.add('aberto');
       }
 
@@ -2084,7 +2242,10 @@
       // Todo título entra no sumário automático (as primeiras folhas do livro).
       function trocarTag(el, tag) {
         const novo = document.createElement(tag);
-        Array.prototype.forEach.call(el.attributes, function (a) { novo.setAttribute(a.name, a.value); });
+        Array.prototype.forEach.call(el.attributes, function (a) {
+          if (a.name === 'data-sem-espaco' && tag !== 'h2') return; // só título tem espaço antes
+          novo.setAttribute(a.name, a.value);
+        });
         while (el.firstChild) novo.appendChild(el.firstChild);
         el.parentNode.replaceChild(novo, el);
         return novo;
@@ -2368,8 +2529,12 @@
         let atual = [];
         const fila = blocos.slice();
         function fecharPagina() {
-          // um título sozinho no fim da folha vai junto com o texto dele para a próxima
-          while (atual.length > 1 && atual[atual.length - 1].el.tagName === 'H2') {
+          // um título sozinho no fim da folha vai junto com o texto dele para a próxima.
+          // CORRIGIDO-SUMARIO: só vale para título com texto e se houver conteúdo que não seja título antes dele na folha;
+          // antes, uma folha feita só de títulos (vazios) era esvaziada até sobrar um e cada Enter criava uma folha nova
+          const ehTituloComTexto = function (x) { return x.el.tagName === 'H2' && comprimento(x.el) > 0; };
+          while (atual.length > 1 && ehTituloComTexto(atual[atual.length - 1]) &&
+                 atual.slice(0, -1).some(function (x) { return x.el.tagName !== 'H2'; })) {
             const u = atual.pop();
             medFolha.removeChild(u.el);
             fila.unshift(u.el);
@@ -2717,6 +2882,7 @@
         } finally {
           reorganizando = false;
         }
+		        registrarHistorico(); // NOVO-HISTORICO
       }
 
       function repaginarAPartir(host) {
@@ -2770,6 +2936,46 @@
         r.deleteContents();
       }
 
+      // NOVO-SUMARIO: Backspace e Delete nunca juntam um título com outro bloco (isso fazia o título sumir do sumário ou
+      // engolir o texto vizinho). Perto de um título eles apagam um caractere do lado de fora (Backspace: o último do bloco de
+      // cima; Delete: o primeiro do bloco de baixo) e um bloco vazio na frente é simplesmente removido.
+      function ehTitulo(el) { return !!el && el.nodeType === 1 && el.tagName === 'H2'; }
+      function textoAntesNoBloco(bloco, s) {
+        const r = document.createRange();
+        r.setStart(bloco, 0);
+        r.setEnd(s.anchorNode, s.anchorOffset);
+        return r.toString();
+      }
+      function textoDepoisNoBloco(bloco, s) {
+        const r = document.createRange();
+        r.setStart(s.anchorNode, s.anchorOffset);
+        r.setEnd(bloco, bloco.childNodes.length);
+        return r.toString();
+      }
+      // jA = índice do bloco de cima (o de baixo é jA + 1); sentido 'tras' = Backspace no começo do de baixo; 'frente' = Delete no fim do de cima
+      function apagarEntreBlocosDaFolha(host, jA, sentido) {
+        const itens = listaTopo(host);
+        const a = itens[jA], b = itens[jA + 1];
+        if (!a || !b) return;
+        // o espaço em branco antes de um título (que parece um Enter) é tirado antes de mexer no texto de cima
+        const comEspaco = ehTitulo(b) && !b.hasAttribute('data-sem-espaco');
+        if (sentido === 'tras') {
+          if (comprimento(a) === 0) a.parentNode.removeChild(a);
+          else if (comEspaco) b.setAttribute('data-sem-espaco', '1');
+          else apagarUltimoCaractere(a);
+        } else if (comprimento(a) === 0) {
+          a.parentNode.removeChild(a);
+          aplicarSelecao(host, jA, 0, jA, 0); // o cursor ia ficar sem lugar: vai para o começo do bloco de baixo
+        } else if (comEspaco) {
+          b.setAttribute('data-sem-espaco', '1');
+        } else if (comprimento(b) === 0) {
+          b.parentNode.removeChild(b);
+        } else {
+          apagarPrimeiroCaractere(b);
+        }
+        guardarFolha(host);
+      }
+
       // Backspace no começo da folha: apaga o caractere antes (mesmo parágrafo) ou junta com o parágrafo de cima
       function apagarNoInicioDaFolha(host) {
         const e = parseInt(host.dataset.pg, 10) - 1;
@@ -2780,6 +2986,17 @@
         if (!itAnt.length) { paginas[e - 1] = '<p><br></p>'; itAnt.push(listaTopo(ant)[0]); }
         const ultimo = itAnt[itAnt.length - 1];
         const primeiro = itCur[0];
+        if (primeiro && primeiro.nodeType === 1 && !primeiro.hasAttribute('data-cont') && (ehTitulo(primeiro) || ehTitulo(ultimo))) {
+          // NOVO-SUMARIO: título na divisa das folhas: não junta; apaga o último caractere do bloco de cima (ou remove o bloco vazio)
+          if (comprimento(ultimo) === 0) ultimo.parentNode.removeChild(ultimo); else apagarUltimoCaractere(ultimo);
+          paginas[e - 1] = ant.innerHTML;
+          paginas[e] = cur.innerHTML;
+          const nsT = nSumario();
+          let i0T = Math.max(nsT, e - 2);
+          while (i0T > nsT && primeiroEhCont(i0T)) i0T--;
+          repaginar(i0T, { pag: e, j: 0, off: 0 }, true);
+          return;
+        }
         if (primeiro && primeiro.nodeType === 1 && primeiro.hasAttribute('data-cont')) {
           apagarUltimoCaractere(ultimo); // é o mesmo parágrafo: o Backspace apaga o último caractere da folha de cima
         } else if (primeiro) {
@@ -2820,10 +3037,21 @@
         const ultimo = itAtu[itAtu.length - 1];
         const primeiro = itProx[0];
         const baseCursor = comprimento(ultimo);
+        let cursorFinal = { pag: e, j: itAtu.length - 1, off: baseCursor };
         if (primeiro) {
           if (primeiro.nodeType === 1 && primeiro.hasAttribute('data-cont')) {
             apagarPrimeiroCaractere(primeiro); // é o mesmo parágrafo: apaga o primeiro caractere da continuação
             if (comprimento(primeiro) === 0 && primeiro.parentNode) primeiro.parentNode.removeChild(primeiro);
+          } else if (ehTitulo(primeiro) || ehTitulo(ultimo)) {
+            // NOVO-SUMARIO: título na divisa das folhas: não junta
+            if (comprimento(ultimo) === 0) {
+              ultimo.parentNode.removeChild(ultimo);            // bloco vazio na frente de um título: some, o título fica
+              cursorFinal = { pag: e + 1, j: 0, off: 0 };
+            } else if (comprimento(primeiro) === 0) {
+              primeiro.parentNode.removeChild(primeiro);
+            } else {
+              apagarPrimeiroCaractere(primeiro);
+            }
           } else {
             if (comprimento(primeiro) > 0) {
               if (comprimento(ultimo) === 0) ultimo.innerHTML = '';
@@ -2837,7 +3065,7 @@
         const ns3 = nSumario();
         let i0 = Math.max(ns3, e - 1);
         while (i0 > ns3 && primeiroEhCont(i0)) i0--;
-        repaginar(i0, { pag: e, j: itAtu.length - 1, off: baseCursor }, true);
+        repaginar(i0, cursorFinal, true);
       }
 
       function irParaFimDaPagina(p) {
@@ -2849,12 +3077,46 @@
 
       document.addEventListener('keydown', function (e) {
         if (!editorAtivo || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-        if (e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        if (e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Enter') return;
         const host = hostDoCursor();
         const s = window.getSelection();
         if (!host || !s.isCollapsed) return;
         const idx = parseInt(host.dataset.pg, 10);
         const pos = posicaoNaFolha(host);
+        // NOVO-SUMARIO: Enter no começo de um título: devolve o espaço tirado pelo Backspace; se o espaço já está lá, abre uma
+        // linha em branco comum (parágrafo) em cima do título. Antes o navegador criava um título vazio, que enchia a folha de títulos.
+        if (e.key === 'Enter' && !e.shiftKey && pos.j >= 0 && s.isCollapsed) {
+          const blocosE = listaTopo(host);
+          const t = blocosE[pos.j];
+          if (ehTitulo(t) && textoAntesNoBloco(t, s) === '') {
+            e.preventDefault();
+            if (t.hasAttribute('data-sem-espaco')) {
+              t.removeAttribute('data-sem-espaco');
+            } else {
+              const vazio = document.createElement('p');
+              vazio.appendChild(document.createElement('br'));
+              t.parentNode.insertBefore(vazio, t);
+            }
+            guardarFolha(host);
+            return;
+          }
+        }
+        // NOVO-SUMARIO: dentro da folha, Backspace no começo de um bloco e Delete no fim de um bloco, quando um dos dois blocos é título
+        if ((e.key === 'Backspace' || e.key === 'Delete') && pos.j >= 0) {
+          const blocos = listaTopo(host);
+          if (e.key === 'Backspace' && pos.j > 0 && textoAntesNoBloco(blocos[pos.j], s) === '' &&
+              (ehTitulo(blocos[pos.j - 1]) || ehTitulo(blocos[pos.j]))) {
+            e.preventDefault();
+            apagarEntreBlocosDaFolha(host, pos.j - 1, 'tras');
+            return;
+          }
+          if (e.key === 'Delete' && pos.j < blocos.length - 1 && /^\s*$/.test(textoDepoisNoBloco(blocos[pos.j], s)) &&
+              (ehTitulo(blocos[pos.j]) || ehTitulo(blocos[pos.j + 1]))) {
+            e.preventDefault();
+            apagarEntreBlocosDaFolha(host, pos.j, 'frente');
+            return;
+          }
+        }
         const noInicio = pos.j === 0 && pos.antes === '';
         // CORRIGIDO-PAGINACAO: espaço em branco depois do cursor é invisível no fim do bloco (a quebra de folha deixa um);
         // sem isto o Delete apagava esse espaço, a reorganização o recolocava e o Delete ficava preso
@@ -2882,13 +3144,200 @@
         if (host) guardarFolha(host);
       });
 
-      barraEd.classList.add('sem-selecao');
+            // ---------- 16) NOVO-HISTORICO: desfazer e refazer ----------
+      const edDesfazer = document.getElementById('edDesfazer');
+      const edRefazer = document.getElementById('edRefazer');
+      const MAX_HIST = 200;
+      const AGRUPAR_MS = 1000;
+      const hist = [];
+      let posHist = -1;
+      let restaurando = false;
+      let tipoAcao = 'outro';
+      let tGravar = 0;
+      let ultimoTipo = null, ultimoTempo = 0;
+
+      function selAtual() {
+        const h = hostDoCursor();
+        return h ? selecaoInfo(h) : null;
+      }
+
+      function atualizarBotoesHist() {
+        edDesfazer.disabled = posHist <= 0;
+        edRefazer.disabled = posHist >= hist.length - 1;
+      }
+
+      function registrarHistorico() {
+        if (restaurando || !editorAtivo) return;
+        clearTimeout(tGravar);
+        tGravar = setTimeout(gravarHistorico, 0);
+      }
+
+      function gravarHistorico() {
+        tGravar = 0;
+        if (restaurando) return;
+        const tipo = tipoAcao;
+        tipoAcao = 'outro';
+        const passo = { paginas: paginas.slice(), livro: estado.livro, sel: selAtual() };
+        const topo = hist[posHist];
+        if (topo && topo.paginas.join('\u0002') === passo.paginas.join('\u0002')) {
+          topo.sel = passo.sel; topo.livro = passo.livro;
+          return;
+        }
+        const agora = Date.now();
+        const agrupa = topo && posHist === hist.length - 1 && posHist > 0 && tipo !== 'outro' &&
+                       tipo === ultimoTipo && agora - ultimoTempo < AGRUPAR_MS;
+        if (agrupa) {
+          hist[posHist] = passo;
+        } else {
+          hist.splice(posHist + 1);
+          hist.push(passo);
+          if (hist.length > MAX_HIST) hist.shift();
+          posHist = hist.length - 1;
+        }
+        ultimoTipo = tipo;
+        ultimoTempo = agora;
+        atualizarBotoesHist();
+      }
+
+      function restaurarPasso(passo) {
+        restaurando = true;
+        try {
+          Array.prototype.splice.apply(paginas, [0, paginas.length].concat(passo.paginas));
+          TOTAL_LIVRO = paginas.length + 2;
+          sumarioAssinatura = '';
+          sincronizarSumario();
+          estado.livro = Math.min(passo.livro, Math.max(0, totalAberturas() - 1));
+          selSalva = null;
+          const pronto = desenhar();
+          const s = passo.sel;
+          Promise.resolve(pronto).then(function () {
+            if (s && s.pag < paginas.length) colocarSelecaoEm(s.pag, s.j, s.off, s.pag, s.j2, s.off2, true);
+            atualizarBarraEd();
+          });
+        } finally {
+          restaurando = false;
+        }
+        ultimoTipo = null;
+        atualizarBotoesHist();
+      }
+
+      function desfazer() {
+        if (!editorAtivo) return;
+        if (tGravar) { clearTimeout(tGravar); gravarHistorico(); }
+        if (posHist <= 0) return;
+        posHist--;
+        restaurarPasso(hist[posHist]);
+      }
+
+      function refazer() {
+        if (!editorAtivo) return;
+        if (tGravar) { clearTimeout(tGravar); gravarHistorico(); }
+        if (posHist >= hist.length - 1) return;
+        posHist++;
+        restaurarPasso(hist[posHist]);
+      }
+
+      edDesfazer.addEventListener('click', desfazer);
+      edRefazer.addEventListener('click', refazer);
+
+      document.addEventListener('beforeinput', function (e) {
+        if (!editorAtivo || !(e.target.closest && e.target.closest(SEL_EDITAVEL))) return;
+        const t = e.inputType || '';
+        if (t === 'historyUndo') { e.preventDefault(); desfazer(); return; }
+        if (t === 'historyRedo') { e.preventDefault(); refazer(); return; }
+        tipoAcao = (t === 'insertText' || t === 'insertCompositionText') ? 'digitar'
+                 : t.indexOf('deleteContent') === 0 ? 'apagar' : 'outro';
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!editorAtivo || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+        if (e.target === edTamanho) return;
+        const k = (e.key || '').toLowerCase();
+        if (k === 'z' && !e.shiftKey) { e.preventDefault(); desfazer(); }
+        else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); refazer(); }
+      });
+
+
+	        // ---------- 17) NOVO-ARQUIVO: salvar e exportar ----------
+      const edSalvar = document.getElementById('edSalvar');
+      const edExportar = document.getElementById('edExportar');
+      const CHAVE_LOCAL = 'livro-anotacoes:v1';
+      let ultimoSalvo = JSON.stringify(paginas);
+
+      function listaValida(l) {
+        return Array.isArray(l) && l.length > 0 && l.every(function (x) { return typeof x === 'string'; });
+      }
+
+      // ao abrir: usa o que foi salvo no navegador; se não houver, o conteudo.js publicado
+      function carregarInicial() {
+        let lista = null;
+        try {
+          const d = JSON.parse(localStorage.getItem(CHAVE_LOCAL) || 'null');
+          if (d && listaValida(d.paginas)) lista = d.paginas;
+        } catch (err) {}
+        if (!lista && window.LIVRO_CONTEUDO && listaValida(window.LIVRO_CONTEUDO.paginas)) lista = window.LIVRO_CONTEUDO.paginas;
+        if (!lista) return;
+        Array.prototype.splice.apply(paginas, [0, paginas.length].concat(lista));
+        TOTAL_LIVRO = paginas.length + 2;
+        sumarioAssinatura = '';
+        estado.livro = 0;
+        ultimoSalvo = JSON.stringify(paginas);
+      }
+
+      function avisar(botao, texto) {
+        const original = botao.textContent;
+        botao.textContent = texto;
+        botao.classList.add('ok');
+        setTimeout(function () { botao.textContent = original; botao.classList.remove('ok'); }, 1400);
+      }
+
+      function salvar() {
+        try {
+          localStorage.setItem(CHAVE_LOCAL, JSON.stringify({ salvoEm: new Date().toISOString(), paginas: paginas }));
+          ultimoSalvo = JSON.stringify(paginas);
+          avisar(edSalvar, 'Salvo ✓');
+        } catch (err) {
+          alert('Não foi possível salvar no navegador.');
+        }
+      }
+
+      // gera o conteudo.js: o leitor carrega este arquivo e mostra estas páginas
+      function exportar() {
+        const limpas = paginas.map(function (h) { return h.replace(/\s*contenteditable="[^"]*"/g, ''); });
+        const js = '// Gerado pelo editor em ' + new Date().toLocaleString('pt-BR') + '. Não edite à mão.\n' +
+                   'window.LIVRO_CONTEUDO = ' + JSON.stringify({ versao: 1, paginas: limpas }, null, 1) + ';\n';
+        const url = URL.createObjectURL(new Blob([js], { type: 'text/javascript' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conteudo.js';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        avisar(edExportar, 'Baixado ✓');
+      }
+
+      edSalvar.addEventListener('click', salvar);
+      edExportar.addEventListener('click', exportar);
+      document.addEventListener('keydown', function (e) {
+        if (!editorAtivo || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+        if ((e.key || '').toLowerCase() === 's') { e.preventDefault(); salvar(); }
+      });
+
+      // avisa antes de fechar a página com alterações não salvas
+      window.addEventListener('beforeunload', function (e) {
+        if (JSON.stringify(paginas) !== ultimoSalvo) { e.preventDefault(); e.returnValue = ''; }
+      });
+
+            carregarInicial();
+      sincronizarSumario(); // NOVO-SUMARIO: o sumário é montado sempre ao abrir, em qualquer modo
+
+	  barraEd.classList.add('sem-selecao');
 
       entrarModo('livro');
       ajustarEscala();
     })();
   </script>
-
   <!-- ===================== NOVO-MOBILE: ZOOM, ARRASTO E MENU DO CELULAR ===================== -->
   <script>
     (function () {
@@ -2898,24 +3347,26 @@
       const menu = document.getElementById('menuLateral');
       const fundoMenu = document.getElementById('fundoMenu');
 
-      const ALTURA_BARRA = 48;      // altura da barra de cima (igual ao CSS)
-      const MARGEM_H = 12;          // folga entre o cartão e as bordas laterais da tela
-      const MARGEM_V = 16;          // folga entre o cartão e as barras de cima e de baixo
+      const ALTURA_BARRA = 48;        // altura da barra verde de cima (igual ao CSS)
+      const ALTURA_FERRAMENTAS = 50;  // NOVO-EDITOR-MOBILE: barra de ferramentas do editor
+      const MARGEM_H = 12;
+      const MARGEM_V = 16;
       const LARGURA_MIN = 200;
       const ZOOM_MAX = 4;
-      const PROPORCAO = 420 / 297;  // largura / altura do cartão
+      const PROPORCAO = 420 / 297;
 
-      let zoom = 1, tx = 0, ty = 0; // zoom atual e posição do canto superior esquerdo do cartão
-      let larguraBase = 0;          // largura do cartão com zoom 1
-      let quadro = 0;               // desenho agendado
+      let zoom = 1, tx = 0, ty = 0;
+      let larguraBase = 0;
+      let quadro = 0;
 
       function celular() { return raiz.classList.contains('mobile'); }
+      // NOVO-EDITOR-MOBILE: no editor o espaço livre começa abaixo da barra de ferramentas
+      function topoLivre() { return ALTURA_BARRA + (raiz.classList.contains('editor') ? ALTURA_FERRAMENTAS : 0); }
 
-      // tamanho do cartão sem zoom: 93% da largura da tela (ou o que a altura permitir)
       function medir() {
         larguraBase = Math.max(LARGURA_MIN, Math.min(
           window.innerWidth * 0.93,
-          (window.innerHeight - 2 * (ALTURA_BARRA + MARGEM_V)) * PROPORCAO
+          (window.innerHeight - (topoLivre() + MARGEM_V) - (ALTURA_BARRA + MARGEM_V)) * PROPORCAO
         ));
       }
 
@@ -2924,13 +3375,12 @@
         return { w: w, h: w / PROPORCAO };
       }
 
-      // mantém o cartão dentro dos limites: se cabe na tela fica centralizado, se não cabe dá para ver qualquer parte dele
       function limitar() {
         const d = dimensoes();
         const vw = window.innerWidth, vh = window.innerHeight;
-        const topo = ALTURA_BARRA + MARGEM_V, base = vh - topo;
+        const topo = topoLivre() + MARGEM_V, base = vh - ALTURA_BARRA - MARGEM_V;
         tx = d.w > vw - 2 * MARGEM_H ? Math.min(MARGEM_H, Math.max(vw - MARGEM_H - d.w, tx)) : (vw - d.w) / 2;
-        ty = d.h > base - topo     ? Math.min(topo,   Math.max(base - d.h, ty))        : (vh - d.h) / 2;
+        ty = d.h > base - topo ? Math.min(topo, Math.max(base - d.h, ty)) : (topo + base - d.h) / 2;
       }
 
       function aplicar() {
@@ -2941,15 +3391,17 @@
       }
       function agendar() { if (!quadro) quadro = requestAnimationFrame(aplicar); }
 
-      // ---------- gestos: um dedo arrasta, dois dedos fazem zoom (pinça) ----------
-      let gesto = null;      // 'arrasto' | 'pinca' | null
-      let ultimo = null;     // último ponto do arrasto
-      let pinca = null;      // dados da pinça no começo
-      let vx = 0, vy = 0;    // velocidade do arrasto (para continuar deslizando ao soltar)
+      // ---------- gestos ----------
+      // um dedo arrasta o cartão, dois dedos fazem zoom; no editor, um dedo sobre a folha seleciona o texto
+      let gesto = null;      // 'arrasto' | 'pinca' | 'selecao' | null
+      let ultimo = null;
+      let pinca = null;
+      let selecao = null;    // NOVO-EDITOR-MOBILE
+      let vx = 0, vy = 0;
       let inerciaId = 0;
 
       function ignorar(alvo) {
-        return alvo && alvo.closest && alvo.closest('.barra-topo, .menu-lateral, .fundo-menu, .controles, .visor-zona');
+        return alvo && alvo.closest && alvo.closest('.barra-topo, .menu-lateral, .fundo-menu, .controles, .visor-zona, .barra-editor, .ed-popup');
       }
       function meio(t) { return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }; }
       function distancia(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
@@ -2957,7 +3409,6 @@
 
       function iniciarPinca(t) {
         const m = meio(t), d = dimensoes();
-        // guarda qual ponto do cartão está entre os dedos, para ele ficar sob os dedos durante o zoom
         pinca = { dist: Math.max(1, distancia(t)), zoom: zoom, ux: (m.x - tx) / d.w, uy: (m.y - ty) / d.h };
         gesto = 'pinca';
       }
@@ -2967,15 +3418,36 @@
         gesto = 'arrasto';
       }
 
+      // NOVO-EDITOR-MOBILE: posição do cursor de texto embaixo do dedo
+      function caretEm(x, y) {
+        if (document.caretPositionFromPoint) {
+          const p = document.caretPositionFromPoint(x, y);
+          return p && p.offsetNode ? { no: p.offsetNode, off: p.offset } : null;
+        }
+        if (document.caretRangeFromPoint) {
+          const r = document.caretRangeFromPoint(x, y);
+          return r ? { no: r.startContainer, off: r.startOffset } : null;
+        }
+        return null;
+      }
+      function iniciarSelecao(t, host) {
+        selecao = { host: host, x: t.clientX, y: t.clientY, ini: caretEm(t.clientX, t.clientY), moveu: false };
+        gesto = 'selecao';
+      }
+
       document.addEventListener('touchstart', function (e) {
         if (!celular() || raiz.classList.contains('menu-aberto') || ignorar(e.target)) return;
         pararInercia();
-        if (e.touches.length >= 2) iniciarPinca(e.touches); else iniciarArrasto(e.touches[0]);
+        if (e.touches.length >= 2) { iniciarPinca(e.touches); return; }
+        const host = raiz.classList.contains('editor') && e.target.closest &&
+                     e.target.closest('.folha[contenteditable="true"]');
+        if (host) { iniciarSelecao(e.touches[0], host); return; }
+        iniciarArrasto(e.touches[0]);
       }, { passive: true });
 
       document.addEventListener('touchmove', function (e) {
         if (!celular() || !gesto) return;
-        if (e.cancelable) e.preventDefault(); // impede o navegador de rolar ou dar zoom na página inteira
+        if (e.cancelable) e.preventDefault();
         if (gesto === 'pinca' && e.touches.length >= 2) {
           const m = meio(e.touches);
           zoom = Math.min(ZOOM_MAX, Math.max(1, pinca.zoom * distancia(e.touches) / pinca.dist));
@@ -2984,6 +3456,15 @@
           ty = m.y - pinca.uy * d.h;
           limitar();
           agendar();
+        } else if (gesto === 'selecao' && e.touches.length === 1) {
+          // NOVO-EDITOR-MOBILE: estende a seleção até o dedo (dentro da mesma folha)
+          const t = e.touches[0];
+          if (!selecao.moveu && Math.hypot(t.clientX - selecao.x, t.clientY - selecao.y) < 8) return;
+          selecao.moveu = true;
+          const p = caretEm(t.clientX, t.clientY);
+          if (!selecao.ini || !p || !selecao.host.contains(p.no) || !selecao.host.contains(selecao.ini.no)) return;
+          if (document.activeElement !== selecao.host) selecao.host.focus({ preventScroll: true });
+          window.getSelection().setBaseAndExtent(selecao.ini.no, selecao.ini.off, p.no, p.off);
         } else if (gesto === 'arrasto' && e.touches.length === 1) {
           const t = e.touches[0], agora = performance.now();
           const dt = Math.max(1, agora - ultimo.t);
@@ -3000,15 +3481,18 @@
       function fimDoToque(e) {
         if (!celular() || !gesto) return;
         if (e.touches.length >= 2) { iniciarPinca(e.touches); return; }
-        if (e.touches.length === 1) { iniciarArrasto(e.touches[0]); return; } // soltou um dedo da pinça: segue arrastando
+        if (e.touches.length === 1) {
+          if (gesto === 'selecao') return; // continua selecionando
+          iniciarArrasto(e.touches[0]);
+          return;
+        }
         const era = gesto;
-        gesto = null; pinca = null;
+        gesto = null; pinca = null; selecao = null;
         if (era === 'arrasto' && Math.hypot(vx, vy) > 0.15 && performance.now() - ultimo.t < 80) deslizar();
       }
       document.addEventListener('touchend', fimDoToque, { passive: true });
       document.addEventListener('touchcancel', fimDoToque, { passive: true });
 
-      // o cartão continua deslizando um pouco depois de soltar o dedo
       function deslizar() {
         let t0 = performance.now();
         const passo = function (t) {
@@ -3026,12 +3510,11 @@
         inerciaId = requestAnimationFrame(passo);
       }
 
-      // iPhone/iPad: impede o zoom de pinça nativo da página
       ['gesturestart', 'gesturechange'].forEach(function (nome) {
         document.addEventListener(nome, function (e) { if (celular()) e.preventDefault(); });
       });
 
-      // ---------- menu (botão de três barrinhas) ----------
+      // ---------- menu (três barrinhas) ----------
       function abrirMenu(abrir) {
         raiz.classList.toggle('menu-aberto', abrir);
         btnMenu.setAttribute('aria-expanded', abrir ? 'true' : 'false');
@@ -3039,20 +3522,19 @@
       }
       btnMenu.addEventListener('click', function () { abrirMenu(!raiz.classList.contains('menu-aberto')); });
       fundoMenu.addEventListener('click', function () { abrirMenu(false); });
-      // escolher uma opção fecha o menu (a ação da opção já foi feita pelo script do livro)
       menu.addEventListener('click', function (e) {
         if (celular() && e.target.closest('button')) abrirMenu(false);
       });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrirMenu(false); });
 
-      // ---------- tela girou, janela mudou ou passou de computador para celular ----------
+      // ---------- mudança de tela ----------
       const mq = window.matchMedia(window.__MQ_MOBILE);
       function aoMudarModo() {
         raiz.classList.toggle('mobile', mq.matches);
-        pararInercia(); gesto = null; pinca = null;
+        pararInercia(); gesto = null; pinca = null; selecao = null;
         if (mq.matches) { zoom = 1; medir(); limitar(); aplicar(); }
         else { cartao.style.transform = ''; abrirMenu(false); }
-        window.dispatchEvent(new Event('resize')); // o script das medidas do computador recalcula
+        window.dispatchEvent(new Event('resize'));
       }
       if (mq.addEventListener) mq.addEventListener('change', aoMudarModo); else mq.addListener(aoMudarModo);
 
@@ -3060,6 +3542,12 @@
         if (!celular()) return;
         medir(); limitar(); aplicar();
       });
+
+      // NOVO-EDITOR-MOBILE: o editor chama isto quando a barra de ferramentas aparece ou some
+      window.__recalcularCelular = function () {
+        if (!celular()) return;
+        zoom = 1; medir(); limitar(); aplicar();
+      };
 
       if (celular()) { medir(); limitar(); aplicar(); }
     })();
