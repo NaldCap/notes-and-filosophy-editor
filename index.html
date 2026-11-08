@@ -1348,8 +1348,8 @@
       function montarFolha(indice) {
         if (indice < 0 || indice >= TOTAL_LIVRO) return ''; // página em branco
                         // ALTERADO-CAPA-IMG: mantém a classe folha-especial para não perder as sombras
-        if (indice === 0) return '<div class="folha folha-especial folha-imagem"><img src="capa.jpg" alt="Capa"><span class="sombra-capa"></span></div>';
-        if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial folha-imagem"><img src="contra-capa.jpg" alt="Contra-capa"><span class="sombra-capa"></span></div>';
+        if (indice === 0) return '<div class="folha folha-especial folha-imagem"><img src="capa.png" alt="Capa"><span class="sombra-capa"></span></div>';
+        if (indice === TOTAL_LIVRO - 1) return '<div class="folha folha-especial folha-imagem"><img src="contra-capa.png" alt="Contra-capa"><span class="sombra-capa"></span></div>';
         // ALTERADO-EDICAO: no modo editor (computador) a folha é editável; data-pg diz qual item de `paginas` ela é
         const ehSumario = paginas[indice - 1].indexOf('data-sumario') !== -1; // NOVO-SUMARIO: o sumário é gerado, não editado
         const ed = editorAtivo && !ehSumario;
