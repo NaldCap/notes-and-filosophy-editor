@@ -472,7 +472,7 @@
 
     /* O menu lateral sai da tela, da direita para a esquerda, quando o editor liga.
        --saida-menu (calculado pelo script) é a distância até sumir pela borda esquerda. */
-    html:not(.mobile) .menu-lateral { transition: transform 0.45s ease-in-out, visibility 0s; }
+        html:not(.mobile) .menu-lateral { display: none; } /* NOVO-MENU-UNICO: os botões ficam só no painel das três barrinhas */
     html.editor:not(.mobile) .menu-lateral {
       transform: translate(calc(-1 * var(--saida-menu, 320px)), -50%);
       visibility: hidden;
@@ -488,7 +488,7 @@
     /* o cartão muda de tamanho suavemente quando o editor liga ou desliga */
     html.trocando:not(.mobile) .cartao { transition: width 0.45s ease-in-out; }
     /* espaço em cima para a barra de ferramentas (8px de margem + 58px da barra + 20px de folga) */
-    html.editor:not(.mobile) main { padding-top: 86px; }
+        html.editor:not(.mobile) main { padding-top: 86px; }
 
     /* ----- barra de ferramentas (desce do topo) ----- */
     html:not(.mobile) .barra-editor {
@@ -506,17 +506,10 @@
       border-radius: 18px;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
       font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-      transform: translateY(calc(-100% - 24px));
-      visibility: hidden;
-      pointer-events: none;
-      transition: transform 0.45s ease-in-out, visibility 0s 0.45s;
-    }
-    html.editor:not(.mobile) .barra-editor {
-      transform: none;
-      visibility: visible;
-      pointer-events: auto;
-      transition: transform 0.45s ease-in-out, visibility 0s;
-    }
+          }
+    /* NOVO-MENU-UNICO: fora do editor a barra mostra só as três barrinhas */
+    html:not(.editor):not(.mobile) .barra-editor { right: auto; padding: 0; }
+    html:not(.editor):not(.mobile) .barra-editor > :not(.ed-menu) { display: none; }
 
     .ed-menu {
       flex: none;
@@ -796,7 +789,7 @@
     html.mobile .controles svg { width: 22px; height: 22px; }
     html.mobile .controles .sep { height: 18px; }
 
-    /* menu: painel turquesa que abre pela esquerda, por cima de tudo (menos da barra de cima) */
+        /* ALTERADO-MENU-MOBILE: painel do menu com o visual do computador (cinza, flutuante, cantos arredondados) */
     html.mobile .fundo-menu {
       position: fixed;
       top: 48px; left: 0; right: 0; bottom: 0;
@@ -807,39 +800,43 @@
 
     html.mobile .menu-lateral {
       position: fixed;
-      top: 48px;
-      bottom: 0;
-      left: 0;
+      top: 56px;                      /* 8px abaixo da barra verde */
+      left: 8px;
+      bottom: auto;
       width: 47%;
-      min-width: 150px;
-      padding: 10px 15px;
+      min-width: 160px;
+      max-height: calc(100% - 68px);
+      padding: 18px 15px 22px;
       gap: 32px;
       overflow-y: auto;
-      background: var(--teal);
+      background: #f4f4f4;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
       z-index: 40;
-      transform: translateX(-100%);
+      transform: translateX(calc(-100% - 30px)); /* fechado: fica fora da tela */
       visibility: hidden;
-      transition: transform 0.22s ease-out, visibility 0s linear 0.22s;
+      transition: transform 0.25s ease, visibility 0s linear 0.25s;
     }
     html.mobile.menu-aberto .menu-lateral {
       transform: none;
       visibility: visible;
-      transition: transform 0.22s ease-out;
+      transition: transform 0.25s ease;
     }
     html.mobile .menu-lateral button {
       position: relative;
       flex: none;
-      height: 44px;
+      height: 46px;
       padding: 0 8px;
       border-radius: 15px;
-      background: #0b9c9f;
+      background: #98c4c4;
       font-size: 14px;
       letter-spacing: -0.4px;
     }
-    html.mobile .menu-lateral button:hover { background: #0b9c9f; }
+    html.mobile .menu-lateral button:hover { background: #98c4c4; }
+    html.mobile .menu-lateral button:active { background: #86b9b9; }
     html.mobile .menu-lateral button.ativo,
-    html.mobile .menu-lateral button.ativo:hover { background: var(--escuro); }
-    html.mobile .menu-lateral br { display: none; } /* o texto quebra sozinho na largura do painel */
+    html.mobile .menu-lateral button.ativo:hover { background: #5aa0a0; }
+    html.mobile .menu-lateral br { display: none; }
     /* linha cinza embaixo de cada botão */
     html.mobile .menu-lateral button::after {
       content: "";
@@ -847,7 +844,7 @@
       left: 50%;
       bottom: -17px;
       width: 74%;
-      height: 2.5px;
+      height: 3px;
       transform: translateX(-50%);
       border-radius: 2px;
       background: #c8d1d9;
@@ -924,19 +921,6 @@
       border-radius: var(--capa-canto) var(--capa-canto-lombada) var(--capa-canto-lombada) var(--capa-canto);
     }
 
-        .miolo.capa .sombra-dir {
-      box-shadow:
-        0 4px 8px rgba(0,0,0,var(--capa-sombra)),
-        6px 18px 36px rgba(0,0,0,calc(var(--capa-sombra) * 0.9)),
-        10px 32px 60px rgba(0,0,0,calc(var(--capa-sombra) * 0.5));
-    }
-    .miolo.contra .sombra-esq {
-      box-shadow:
-        0 4px 8px rgba(0,0,0,var(--capa-sombra)),
-        -6px 18px 36px rgba(0,0,0,calc(var(--capa-sombra) * 0.9)),
-        -10px 32px 60px rgba(0,0,0,calc(var(--capa-sombra) * 0.5));
-    }
-
     .folha-imagem .sombra-capa {
       background: linear-gradient(to right,
         rgba(0,0,0,calc(var(--capa-vinco-escuro) * 0.9)) 0%,
@@ -955,14 +939,15 @@
     }
 
         .folha-imagem img[alt="Contra-capa"] + .sombra-capa {
+            /* CORRIGIDO-VINCO: luz vem sempre do mesmo lado; troca sombra e luz na contracapa */
       background: linear-gradient(to left,
-        rgba(0,0,0,calc(var(--capa-vinco-escuro) * 0.9)) 0%,
-        rgba(255,255,255,var(--capa-vinco-claro)) 0.8%,
-        rgba(0,0,0,0.03) 2%,
-        rgba(0,0,0,var(--capa-vinco-escuro)) 3.4%,
-        rgba(255,255,255,var(--capa-vinco-claro)) 4.2%,
-        rgba(255,255,255,0.06) 5.2%,
-        rgba(0,0,0,0.04) 6.5%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 0%,
+        rgba(0,0,0,calc(var(--capa-vinco-escuro) * 0.9)) 0.8%,
+        rgba(255,255,255,0.03) 2%,
+        rgba(255,255,255,var(--capa-vinco-claro)) 3.4%,
+        rgba(0,0,0,var(--capa-vinco-escuro)) 4.2%,
+        rgba(0,0,0,0.06) 5.2%,
+        rgba(255,255,255,0.04) 6.5%,
         transparent 9%);
       box-shadow:
         inset 0 6px 6px -3px rgba(255,255,255,var(--capa-brilho)),
@@ -970,7 +955,12 @@
         inset 10px 0 14px -4px rgba(0,0,0,var(--capa-borda)),
         inset 0 0 0 2px rgba(0,0,0,0.06);
     }
-
+    /* NOVO-TECLADO-MOBILE: as barras de cima acompanham a tela quando o teclado sobe.
+       --vv-top (calculado pelo script) é quanto o navegador deslocou a área visível. */
+    html.mobile .barra-topo      { top: var(--vv-top, 0px); }
+    html.mobile .visor-zona      { top: var(--vv-top, 0px); }
+    html.mobile.editor .barra-editor { top: calc(48px + var(--vv-top, 0px)); }
+    html.mobile .ed-popup        { top: calc(104px + var(--vv-top, 0px)); }
 
   </style>
 </head>
@@ -1101,16 +1091,8 @@
             </label>
             <input type="file" id="arquivoPdf" accept="application/pdf,.pdf" hidden>
           </div>
-
-        <!-- NOVO-MENU: aviso do editor (só na versão do editor) -->
-        <div class="solta" id="avisoEditor">
-          <div class="solta-caixa solta-aviso">
-            <strong>Editor de texto</strong>
-            <span>Em construção: ele chega na próxima versão.</span>
-          </div>
-        </div>
-        </div>
-      </div>
+        </div> <!-- CORRIGIDO-VISOR: fecha a .area-branca -->
+      </div>   <!-- CORRIGIDO-VISOR: fecha o .cartao -->
 
       <!-- NOVO-VISOR: página atual / total, preso ao cartão -->
       <div class="visor-zona" id="visorZona">
@@ -1812,7 +1794,7 @@
       }
 
       function abrirPainel() {
-        if (!editorAtivo || painelAberto) return;
+                if (painelAberto) return;
         painelAberto = true;
         empurrao = calcularEmpurrao();
         raizEd.style.setProperty('--empurrao', empurrao + 'px');
@@ -1851,7 +1833,7 @@
       fundoPainel.addEventListener('click', fecharPainel);          // clicar em qualquer outro ponto da tela fecha
       peLivro.addEventListener('click', function () { fecharPainel(); btnLivro.click(); });
       pePdf.addEventListener('click', function () { fecharPainel(); btnPdf.click(); });
-      peEditor.addEventListener('click', fecharPainel);              // já está no editor: só fecha o painel
+            peEditor.addEventListener('click', function () { fecharPainel(); btnEditor.click(); });
 
       window.addEventListener('resize', function () {
         if (!editorAtivo) return;
@@ -1882,7 +1864,7 @@
       let arrastoEd = null; // último ponto do mouse durante o arrasto
       let zoomGestoEd = 1;  // zoom no começo de um gesto do Safari
 
-      function zoomPermitidoEd() { return editorAtivo && !raizEd.classList.contains('mobile'); }
+            function zoomPermitidoEd() { return !raizEd.classList.contains('mobile'); } // NOVO-ZOOM-TODOS: livro, PDF e editor
 
       function dimsEd() {
         const w = homeEd.w * zoomEd;
@@ -2094,17 +2076,20 @@
       }
 
       // elemento que contém o primeiro trecho de texto realmente selecionado (é dele que se lê fonte, tamanho e negrito)
+            // CORRIGIDO-TAMANHO: procura o primeiro trecho com letras REALMENTE selecionadas
+      // (antes, quando a seleção começava no fim do texto anterior, lia o tamanho do parágrafo)
       function elementoDoInicio(range) {
-        let n = range.startContainer;
-        if (n.nodeType !== 3) {
-          const raizBusca = n.childNodes[range.startOffset] || n;
-          const w = document.createTreeWalker(raizBusca.nodeType === 3 ? raizBusca.parentNode : raizBusca, NodeFilter.SHOW_TEXT);
-          let t, achou = null;
-          while ((t = w.nextNode())) {
-            if (t.textContent.trim() && range.intersectsNode(t)) { achou = t; break; }
-          }
-          if (achou) n = achou;
+        const ca = range.commonAncestorContainer;
+        const raizBusca = ca.nodeType === 3 ? ca.parentNode : ca;
+        const w = document.createTreeWalker(raizBusca, NodeFilter.SHOW_TEXT);
+        let t;
+        while ((t = w.nextNode())) {
+          if (!range.intersectsNode(t)) continue;
+          const ini = t === range.startContainer ? range.startOffset : 0;
+          const fim = t === range.endContainer ? range.endOffset : t.nodeValue.length;
+          if (fim > ini && t.nodeValue.slice(ini, fim).trim()) return t.parentElement;
         }
+        const n = range.startContainer;
         return n.nodeType === 1 ? n : n.parentElement;
       }
 
@@ -2177,17 +2162,23 @@
           document.execCommand('styleWithCSS', false, false);
           document.execCommand('fontSize', false, '7');
           document.execCommand('styleWithCSS', false, true);
-          const fontes = host.querySelectorAll('font[size="7"]');
+                    // CORRIGIDO-TAMANHO: também pega a caixinha que já existia (o navegador muda o tamanho dela em vez de criar outra)
+          const fontes = host.querySelectorAll('font[size="7"], [style*="xxx-large"]');
           if (!fontes.length) return;
           let primeiro = null, ultimo = null;
           Array.prototype.forEach.call(fontes, function (f) {
-            const sp = document.createElement('span');
+            let sp = f;
+            if (f.tagName === 'FONT') {
+              sp = document.createElement('span');
+              while (f.firstChild) sp.appendChild(f.firstChild);
+              f.parentNode.replaceChild(sp, f);
+            }
             sp.style.fontSize = px + 'px';
-            while (f.firstChild) sp.appendChild(f.firstChild);
-            f.parentNode.replaceChild(sp, f);
+            Array.prototype.forEach.call(sp.querySelectorAll('[style*="font-size"]'), function (d) { d.style.fontSize = ''; }); // tira tamanhos antigos de dentro
             if (!primeiro) primeiro = sp;
             ultimo = sp;
           });
+
           const nr = document.createRange();
           nr.setStart(primeiro, 0);
           nr.setEnd(ultimo, ultimo.childNodes.length);
@@ -2202,14 +2193,26 @@
       function fecharPopups(exceto) {
         [popFonte, popCor].forEach(function (p) { if (p !== exceto) p.classList.remove('aberto'); });
       }
-      function alternarPopup(pop, botao) {
+            function alternarPopup(pop, botao) {
         fecharPopups(pop);
         if (pop.classList.contains('aberto')) { pop.classList.remove('aberto'); return; }
         if (!temSelecao()) return; // sem texto selecionado não há o que alterar
-                // ALTERADO-EDITOR-MOBILE: no celular a barra rola para os lados, então usa a posição na tela
-        pop.style.left = raizEd.classList.contains('mobile')
-          ? Math.max(4, botao.getBoundingClientRect().left) + 'px'
-          : botao.offsetLeft + 'px';
+        if (raizEd.classList.contains('mobile')) {
+          // ALTERADO-POPUP-MOBILE: rola a barra até o popup caber inteiro na tela, lado a lado
+          const MARGEM = 8;
+          const larg = pop.offsetWidth; // mede mesmo escondido (visibility: hidden mantém o tamanho)
+          let r = botao.getBoundingClientRect();
+          const sobra = (r.left + larg) - (window.innerWidth - MARGEM);
+          if (sobra > 0) {
+            barraEd.scrollLeft += sobra; // empurra a barra para a esquerda
+            r = botao.getBoundingClientRect(); // posição do balde depois de rolar
+          }
+          // segurança: se a barra não tinha mais para onde rolar, encosta o popup na borda direita
+          const maxEsq = window.innerWidth - larg - MARGEM;
+          pop.style.left = Math.max(MARGEM, Math.min(r.left, maxEsq)) + 'px';
+        } else {
+          pop.style.left = botao.offsetLeft + 'px';
+        }
         pop.classList.add('aberto');
       }
 
@@ -2533,8 +2536,8 @@
           // CORRIGIDO-SUMARIO: só vale para título com texto e se houver conteúdo que não seja título antes dele na folha;
           // antes, uma folha feita só de títulos (vazios) era esvaziada até sobrar um e cada Enter criava uma folha nova
           const ehTituloComTexto = function (x) { return x.el.tagName === 'H2' && comprimento(x.el) > 0; };
-          while (atual.length > 1 && ehTituloComTexto(atual[atual.length - 1]) &&
-                 atual.slice(0, -1).some(function (x) { return x.el.tagName !== 'H2'; })) {
+                    if (atual.length > 1 && ehTituloComTexto(atual[atual.length - 1]) &&
+              atual[atual.length - 2].el.tagName !== 'H2') { // CORRIGIDO-PAGINA-VAZIA: só um título isolado desce
             const u = atual.pop();
             medFolha.removeChild(u.el);
             fila.unshift(u.el);
@@ -2792,6 +2795,25 @@
         sumarioAssinatura = novas.length + '|' + titulos.map(function (t) { return t.rel + ':' + t.texto; }).join('\u0001');
         return novas.length - n0;
       }
+            // CORRIGIDO-CURSOR: refaz o sumário 600 ms depois da última alteração e devolve o cursor ao mesmo ponto
+      let tSumario = 0;
+      function agendarSumario() { clearTimeout(tSumario); tSumario = setTimeout(aplicarSumarioAgendado, 600); }
+      function aplicarSumarioAgendado() {
+        tSumario = 0;
+        if (reorganizando || compondo) { agendarSumario(); return; }
+        const h = hostDoCursor();
+        const sel = h ? selecaoInfo(h) : null;
+        const antes = sumarioAssinatura;
+        const desl = sincronizarSumario();
+        if (!desl && antes === sumarioAssinatura) return;
+        estado.livro = Math.min(Math.max(0, estado.livro + Math.round(desl / 2)), Math.max(0, totalAberturas() - 1));
+        const pronto = desenhar();
+        if (sel) Promise.resolve(pronto).then(function () {
+          colocarSelecaoEm(sel.pag + desl, sel.j, sel.off, sel.pag + desl, sel.j2, sel.off2, true);
+        });
+        registrarHistorico();
+      }
+      function sumarioEmDia() { if (tSumario) { clearTimeout(tSumario); aplicarSumarioAgendado(); } }
       // clicar numa linha do sumário leva à folha do título
       function irParaPagina(p) {
         if (!(p >= 1 && p <= paginas.length) || modoConteudo() !== 'livro') return;
@@ -2836,7 +2858,8 @@
           Array.prototype.splice.apply(paginas, [i0, ate - i0].concat(d.saida));
           TOTAL_LIVRO = paginas.length + 2;
           // NOVO-SUMARIO: refaz o sumário; desl = folhas de sumário que entraram (+) ou saíram (−) na frente do texto
-          const desl = sincronizarSumario();
+                    const desl = tudo ? sincronizarSumario() : 0; // CORRIGIDO-CURSOR: durante a edição o sumário espera
+          if (!tudo) agendarSumario();
           const mudouTotal = paginas.length !== totalAntes;
 
           // abertura atual precisa continuar existindo
@@ -2959,10 +2982,16 @@
         if (!a || !b) return;
         // o espaço em branco antes de um título (que parece um Enter) é tirado antes de mexer no texto de cima
         const comEspaco = ehTitulo(b) && !b.hasAttribute('data-sem-espaco');
-        if (sentido === 'tras') {
+                if (sentido === 'tras') {
           if (comprimento(a) === 0) a.parentNode.removeChild(a);
           else if (comEspaco) b.setAttribute('data-sem-espaco', '1');
-          else apagarUltimoCaractere(a);
+          else { // CORRIGIDO-BACKSPACE: junta o bloco de baixo no de cima (mantém o tipo do de cima)
+            const base = comprimento(a);
+            Array.prototype.slice.call(a.querySelectorAll('br')).forEach(function (br) { if (!br.nextSibling) br.remove(); });
+            if (comprimento(b) > 0) while (b.firstChild) a.appendChild(b.firstChild);
+            b.parentNode.removeChild(b);
+            aplicarSelecao(host, jA, base);
+          }
         } else if (comprimento(a) === 0) {
           a.parentNode.removeChild(a);
           aplicarSelecao(host, jA, 0, jA, 0); // o cursor ia ficar sem lugar: vai para o começo do bloco de baixo
@@ -3083,6 +3112,25 @@
         if (!host || !s.isCollapsed) return;
         const idx = parseInt(host.dataset.pg, 10);
         const pos = posicaoNaFolha(host);
+                // CORRIGIDO-ENTER: Enter no meio/fim do título: o título fica com o texto de antes; o resto vira parágrafo comum
+        if (e.key === 'Enter' && pos.j >= 0) {
+          const tE = listaTopo(host)[pos.j];
+          if (ehTitulo(tE) && textoAntesNoBloco(tE, s) !== '') {
+            e.preventDefault();
+            const r = document.createRange();
+            r.setStart(s.anchorNode, s.anchorOffset);
+            r.setEnd(tE, tE.childNodes.length);
+            const p = document.createElement('p');
+            p.appendChild(r.extractContents());
+            podarVazios(p);
+            if (!comprimento(p)) { p.textContent = ''; p.appendChild(document.createElement('br')); }
+            if (tE.hasAttribute('data-cont-next')) { tE.removeAttribute('data-cont-next'); }
+            tE.parentNode.insertBefore(p, tE.nextSibling);
+            aplicarSelecao(host, pos.j + 1, 0);
+            guardarFolha(host);
+            return;
+          }
+        }
         // NOVO-SUMARIO: Enter no começo de um título: devolve o espaço tirado pelo Backspace; se o espaço já está lá, abre uma
         // linha em branco comum (parágrafo) em cima do título. Antes o navegador criava um título vazio, que enchia a folha de títulos.
         if (e.key === 'Enter' && !e.shiftKey && pos.j >= 0 && s.isCollapsed) {
@@ -3552,6 +3600,24 @@
       if (celular()) { medir(); limitar(); aplicar(); }
     })();
   </script>
+  <!-- NOVO-TECLADO-MOBILE: mantém as barras de cima no lugar quando o teclado abre -->
+  <script>
+    (function () {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const raiz = document.documentElement;
+      function fixarBarras() {
+        const desloc = raiz.classList.contains('mobile') ? Math.max(0, vv.offsetTop) : 0;
+        raiz.style.setProperty('--vv-top', desloc + 'px');
+      }
+      vv.addEventListener('resize', fixarBarras);
+      vv.addEventListener('scroll', fixarBarras);
+      window.addEventListener('scroll', fixarBarras);
+      document.addEventListener('focusin', function () { setTimeout(fixarBarras, 300); });
+      fixarBarras();
+    })();
+  </script>
 
 </body>
+<!-- final editor 1/1 -->
 </html>
